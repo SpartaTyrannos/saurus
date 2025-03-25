@@ -8,6 +8,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.ArrayList;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -25,6 +27,9 @@ public class Order extends BaseEntity {
 
     @OneToOne(mappedBy = "order",cascade = CascadeType.ALL,orphanRemoval = true)
     private Payment payment;
+
+    @OneToMany(mappedBy = "order",cascade = CascadeType.ALL,orphanRemoval = true)
+    private List<Ticket> tickets = new ArrayList<>();
 
     private int amount;
 
