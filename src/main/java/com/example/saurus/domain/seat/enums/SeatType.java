@@ -1,5 +1,6 @@
-package com.example.saurus.domain.seat.entity;
+package com.example.saurus.domain.seat.enums;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
 
@@ -21,8 +22,20 @@ public enum SeatType {
         this.label = label;
     }
 
+    // 테스트용
+
     @JsonValue
     public String toJson() {
         return label;
+    }
+
+    @JsonCreator
+    public static SeatType from(String value) {
+        for (SeatType type : SeatType.values()) {
+            if (type.name().equalsIgnoreCase(value)) {
+                return type;
+            }
+        }
+        throw new IllegalArgumentException("Invalid seatType: " + value);
     }
 }
