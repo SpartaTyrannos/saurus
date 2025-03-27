@@ -50,4 +50,5 @@ public class Game extends BaseEntity {
         this.gameTime = gameTime;
         this.ticketOpen = ticketOpen;
     }
+
 }
