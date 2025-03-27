@@ -29,5 +29,4 @@ public interface SubscribeRepository extends JpaRepository<Subscribe, Long> {
             "AND s.startDate <= :now AND s.endDate >= :now " +
             "ORDER BY s.startDate DESC")
     List<Subscribe> findActiveSubscriptions(@Param("userId") Long userId, @Param("now") LocalDateTime now);
-
 }

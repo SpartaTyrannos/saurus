@@ -1,7 +1,10 @@
 package com.example.saurus.domain.order.entity;
 
 import com.example.saurus.domain.common.entity.BaseEntity;
+import com.example.saurus.domain.order.OrderStatus;
 import com.example.saurus.domain.payment.entity.Payment;
+import com.example.saurus.domain.ticket.entity.Ticket;
+import com.example.saurus.domain.user.entity.User;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -9,6 +12,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @Getter
 @Setter
@@ -33,8 +37,8 @@ public class Order extends BaseEntity {
 
     private int amount;
 
-    private int total_price;
+    private int totalPrice;
 
-
+    private OrderStatus status;
 
 }
