@@ -132,7 +132,8 @@ public class OrderService {
                 ticketCount,
                 discountRate,
                 discountedPrice,
-                order.getCreatedAt().toString());
+                order.getCreatedAt().toString(),
+                payment.getPaymentMethod());
     }
 
     // 주문 전체 조회 (페이징)
@@ -158,7 +159,8 @@ public class OrderService {
                             ticketCount,
                             discountRate,
                             order.getTotalPrice(),
-                            order.getCreatedAt().toString()
+                            order.getCreatedAt().toString(),
+                            order.getPayment().getPaymentMethod()
                     );
                 }).collect(Collectors.toList());
 
@@ -194,7 +196,8 @@ public class OrderService {
                 ticketCount,
                 discountRate,
                 order.getTotalPrice(),
-                order.getCreatedAt().toString()
+                order.getCreatedAt().toString(),
+                order.getPayment().getPaymentMethod()
         );
     }
 
@@ -217,6 +220,7 @@ public class OrderService {
         if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
 
             // 실제 환불 로직 필요
+
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
             paymentRepository.save(payment);
         }
