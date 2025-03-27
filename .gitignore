@@ -38,4 +38,5 @@ out/
 
 ### properties, yml ###
 *.properties
-*.yml.DS_Store
+*.yml
+.DS_Store
