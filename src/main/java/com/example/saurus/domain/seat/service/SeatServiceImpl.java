@@ -10,19 +10,11 @@ import com.example.saurus.domain.seat.mapper.SeatMapper;
 import com.example.saurus.domain.seat.repository.SeatRepository;
 import com.example.saurus.domain.section.entity.Section;
 import com.example.saurus.domain.section.repository.SectionRepository;
-import jakarta.persistence.EntityNotFoundException;
-import static java.util.stream.Collectors.toList;
 
-import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.DeleteMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 
 import java.util.List;
 

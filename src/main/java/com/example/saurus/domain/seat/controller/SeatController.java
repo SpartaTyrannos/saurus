@@ -1,15 +1,12 @@
 package com.example.saurus.domain.seat.controller;
 
-import com.example.saurus.domain.common.annotation.Auth;
 import com.example.saurus.domain.common.dto.AuthUser;
-import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
 import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
 import com.example.saurus.domain.seat.dto.response.SeatResponse;
 import com.example.saurus.domain.seat.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

@@ -1,7 +1,6 @@
 package com.example.saurus.domain.seat.dto.response;
 
 import com.example.saurus.domain.seat.enums.SeatType;
-import com.example.saurus.domain.seat.enums.SeatType;
 import lombok.Builder;
 import lombok.Getter;
 
