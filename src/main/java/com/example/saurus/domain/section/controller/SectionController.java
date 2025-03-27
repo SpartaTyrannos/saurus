@@ -1,5 +1,6 @@
 package com.example.saurus.domain.section.controller;
 
+import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
@@ -22,6 +23,7 @@ public class SectionController {
 
     private final SectionService sectionService;
 
+    @Admin
     @PostMapping
     public ResponseEntity<SectionResponse> createSection(
             @PathVariable Long gameId,
@@ -31,6 +33,7 @@ public class SectionController {
         return ResponseEntity.ok(sectionService.createSection(authUser, gameId, request));
     }
 
+    @Admin
     @PutMapping("/{sectionId}")
     public ResponseEntity<SectionResponse> updateSection(
             @PathVariable Long gameId,
@@ -41,6 +44,7 @@ public class SectionController {
         return ResponseEntity.ok(sectionService.updateSection(authUser, gameId, sectionId, request));
     }
 
+    @Admin
     @DeleteMapping("/{sectionId}")
     public ResponseEntity<Void> deleteSection(
 

@@ -29,7 +29,6 @@ public class SectionServiceImpl implements SectionService {
     private final GameRepository gameRepository;
 
     @Override
-    @Admin
     @Transactional
     public SectionResponse createSection(AuthUser authUser, Long gameId, SectionCreateRequest request) {
         Game game = gameRepository.findById(gameId)
@@ -45,7 +44,6 @@ public class SectionServiceImpl implements SectionService {
     }
 
     @Override
-    @Admin
     @Transactional
     public SectionResponse updateSection(AuthUser authUser, Long gameId, Long sectionId, SectionUpdateRequest request) {
         Section section = getSectionWithGameCheck(gameId, sectionId);
@@ -55,7 +53,6 @@ public class SectionServiceImpl implements SectionService {
 
 
     @Override
-    @Admin
     @Transactional
     public void deleteSection(AuthUser authUser, Long gameId, Long sectionId) {
         Section section = getSectionWithGameCheck(gameId, sectionId);
