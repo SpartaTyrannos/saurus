@@ -70,9 +70,8 @@ public class JwtFilter extends OncePerRequestFilter {
 
             AuthUser authUser = new AuthUser(userId, email, name, phone, userRole);
             // SecurityContext에 인증 객체 등록
-            UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+            JwtAuthenticationToken authentication = new JwtAuthenticationToken(
                     authUser,
-                    null,
                     List.of(new SimpleGrantedAuthority(userRole.getAuthority()))
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
