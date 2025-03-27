@@ -30,7 +30,7 @@ public class GameController {
             @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody GameSaveRequestDto gameSaveRequestDto
     ) {
-        return ResponseEntity.ok(gameService.saveGame(authUser, gameSaveRequestDto));
+        return ResponseEntity.ok(gameService.saveGame(gameSaveRequestDto));
     }
 
     @GetMapping
@@ -60,7 +60,7 @@ public class GameController {
             @PathVariable long gameId,
             @Valid @RequestBody GameUpdateRequestDto gameUpdateRequestDto
     ) {
-        return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequestDto));
+        return ResponseEntity.ok(gameService.updateGame(gameId, gameUpdateRequestDto));
     }
 
     @Admin
@@ -69,6 +69,6 @@ public class GameController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
-        gameService.deleteGame(authUser, gameId);
+        gameService.deleteGame(gameId);
     }
 }

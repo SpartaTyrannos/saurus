@@ -28,7 +28,7 @@ public class GameService {
     private final GameRepository gameRepository;
 
     @Transactional
-    public GameSaveResponseDto saveGame(AuthUser authUser, @Valid GameSaveRequestDto gameSaveRequestDto) {
+    public GameSaveResponseDto saveGame(@Valid GameSaveRequestDto gameSaveRequestDto) {
 
         Game newGame = new Game(
                 gameSaveRequestDto.getTitle(),
@@ -88,7 +88,7 @@ public class GameService {
     }
 
     @Transactional
-    public GameUpdateResponseDto updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequestDto gameUpdateRequestDto) {
+    public GameUpdateResponseDto updateGame(long gameId, @Valid GameUpdateRequestDto gameUpdateRequestDto) {
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
@@ -113,7 +113,7 @@ public class GameService {
     }
 
     @Transactional
-    public void deleteGame(AuthUser authUser, long gameId) {
+    public void deleteGame(long gameId) {
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
