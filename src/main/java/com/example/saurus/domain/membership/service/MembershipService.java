@@ -1,5 +1,6 @@
 package com.example.saurus.domain.membership.service;
 
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.membership.dto.request.MembershipRequestDto;
 import com.example.saurus.domain.membership.dto.response.MembershipResponseDto;
 import com.example.saurus.domain.membership.entity.Membership;

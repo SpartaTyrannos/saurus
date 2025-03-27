@@ -1,5 +1,6 @@
 package com.example.saurus.domain.subscribe.service;
 
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.membership.entity.Membership;
 import com.example.saurus.domain.membership.service.MembershipService;
 import com.example.saurus.domain.subscribe.dto.response.SubscribeResponseDto;
