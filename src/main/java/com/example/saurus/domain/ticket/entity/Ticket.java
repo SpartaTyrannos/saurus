@@ -6,11 +6,13 @@ import com.example.saurus.domain.seat.entity.Seat;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Getter
+@Setter
 @Entity
 @NoArgsConstructor
-@Table(name="subscribes")
+@Table(name = "subscribes")
 public class Ticket extends BaseEntity {
 
     @Id
