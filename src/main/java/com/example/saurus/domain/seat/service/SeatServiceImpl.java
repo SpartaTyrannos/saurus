@@ -1,5 +1,6 @@
 package com.example.saurus.domain.seat.service;
 
+import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
@@ -12,11 +13,11 @@ import com.example.saurus.domain.section.entity.Section;
 import com.example.saurus.domain.section.repository.SectionRepository;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -27,13 +28,13 @@ public class SeatServiceImpl implements SeatService {
     private final SectionRepository sectionRepository;
 
     @Override
+    @Admin
     @Transactional
-    public SeatResponse createSeat(AuthUser authUser, Long sectionId, SeatCreateRequest request) {
-        checkAdmin(authUser);
+    public SeatResponse createSeat(AuthUser authUser, Long gameId, Long sectionId, SeatCreateRequest request) {
 
         Section section = sectionRepository.findById(sectionId)
                 .filter(s -> s.getDeletedAt() == null)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 Section이 존재하지 않거나 삭제되었습니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 구역이 존재하지 않거나 삭제되었습니다."));
 
         boolean exists = seatRepository.existsBySectionIdAndSeatRowAndNumberAndDeletedAtIsNull(
                 sectionId, request.getSeatRow(), request.getNumber().toString()
@@ -48,9 +49,9 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
+    @Admin
     @Transactional
-    public SeatResponse updateSeat(AuthUser authUser, Long seatId, SeatUpdateRequest request) {
-        checkAdmin(authUser);
+    public SeatResponse updateSeat(AuthUser authUser, Long gameId, Long seatId, SeatUpdateRequest request) {
 
         Seat seat = getActiveSeat(seatId);
         seat.update(request.getSeatRow(), request.getNumber().toString(), request.getSeatType());
@@ -58,34 +59,41 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
+    @Admin
     @Transactional
-    public void deleteSeat(AuthUser authUser, Long seatId) {
-        checkAdmin(authUser);
+    public void deleteSeat(AuthUser authUser, Long gameId, Long seatId) {
 
         Seat seat = getActiveSeat(seatId);
         seat.delete();
     }
 
     @Override
-    public List<SeatResponse> getSeatsBySectionId(Long sectionId) {
-        return seatRepository.findBySectionIdAndDeletedAtIsNull(sectionId).stream()
-                .map(SeatMapper::toResponse)
-                .toList();
+    public Page<SeatResponse> getSeatsBySectionId(Long gameId, Long sectionId, Pageable pageable) {
+        Section section = sectionRepository.findById(sectionId)
+                .filter(s -> s.getDeletedAt() == null)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 구역입니다."));
+
+        validateSectionBelongsToGame(gameId, section);
+
+        return seatRepository.findBySectionIdAndDeletedAtIsNull(sectionId, pageable)
+                .map(SeatMapper::toResponse);
     }
 
     @Override
-    public SeatResponse getSeat(Long seatId) {
-        return SeatMapper.toResponse(getActiveSeat(seatId));
+    public SeatResponse getSeat(Long gameId, Long seatId) {
+        Seat seat = getActiveSeat(seatId);
+        validateSectionBelongsToGame(gameId, seat.getSection());
+        return SeatMapper.toResponse(seat);
     }
 
     private Seat getActiveSeat(Long seatId) {
         return seatRepository.findByIdAndDeletedAtIsNull(seatId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 Seat이 존재하지 않거나 삭제되었습니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 좌석이 존재하지 않거나 삭제되었습니다."));
     }
 
-    private void checkAdmin(AuthUser authUser) {
-        if (!authUser.getUserRole().name().equals("ADMIN")) {
-            throw new CustomException(HttpStatus.FORBIDDEN, "관리자만 수행할 수 있는 작업입니다.");
+    private void validateSectionBelongsToGame(Long gameId, Section section) {
+        if (!section.getGame().getId().equals(gameId)) {
+            throw new CustomException(HttpStatus.BAD_REQUEST, "해당 구역은 해당 경기에 속하지 않습니다.");
         }
     }
 }

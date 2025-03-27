@@ -4,18 +4,19 @@ import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
 import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
 import com.example.saurus.domain.seat.dto.response.SeatResponse;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface SeatService {
 
-    SeatResponse createSeat(AuthUser authUser, Long sectionId, SeatCreateRequest request);
+    SeatResponse createSeat(AuthUser authUser, Long gameId, Long sectionId, SeatCreateRequest request);
 
-    SeatResponse updateSeat(AuthUser authUser, Long seatId, SeatUpdateRequest request);
+    SeatResponse updateSeat(AuthUser authUser, Long gameId, Long seatId, SeatUpdateRequest request);
 
-    void deleteSeat(AuthUser authUser, Long seatId);
+    void deleteSeat(AuthUser authUser, Long gameId, Long seatId);
 
-    List<SeatResponse> getSeatsBySectionId(Long sectionId);
+    Page<SeatResponse> getSeatsBySectionId(Long gameId, Long sectionId, Pageable pageable);
 
-    SeatResponse getSeat(Long seatId);
+    SeatResponse getSeat(Long gameId, Long seatId);
+
 }

@@ -7,6 +7,11 @@ import com.example.saurus.domain.seat.dto.response.SeatResponse;
 import com.example.saurus.domain.seat.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
@@ -22,38 +27,48 @@ public class SeatController {
 
     @PostMapping
     public ResponseEntity<SeatResponse> createSeat(
+            @PathVariable Long gameId,
             @PathVariable Long sectionId,
             @RequestBody @Valid SeatCreateRequest request,
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        return ResponseEntity.ok(seatService.createSeat(authUser, sectionId, request));
+        return ResponseEntity.ok(seatService.createSeat(authUser, gameId, sectionId, request));
     }
 
     @PutMapping("/{seatId}")
     public ResponseEntity<SeatResponse> updateSeat(
+            @PathVariable Long gameId,
             @PathVariable Long seatId,
             @RequestBody @Valid SeatUpdateRequest request,
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        return ResponseEntity.ok(seatService.updateSeat(authUser, seatId, request));
+        return ResponseEntity.ok(seatService.updateSeat(authUser, gameId, seatId, request));
     }
 
     @DeleteMapping("/{seatId}")
     public ResponseEntity<Void> deleteSeat(
+            @PathVariable Long gameId,
             @PathVariable Long seatId,
             @AuthenticationPrincipal AuthUser authUser
     ) {
-        seatService.deleteSeat(authUser, seatId);
+        seatService.deleteSeat(authUser, gameId, seatId);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping
-    public ResponseEntity<List<SeatResponse>> getSeats(@PathVariable Long sectionId) {
-        return ResponseEntity.ok(seatService.getSeatsBySectionId(sectionId));
+    public ResponseEntity<Page<SeatResponse>> getSeats(
+            @PathVariable Long gameId,
+            @PathVariable Long sectionId,
+            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
+    ) {
+        return ResponseEntity.ok(seatService.getSeatsBySectionId(gameId, sectionId, pageable));
     }
 
     @GetMapping("/{seatId}")
-    public ResponseEntity<SeatResponse> getSeat(@PathVariable Long seatId) {
-        return ResponseEntity.ok(seatService.getSeat(seatId));
+    public ResponseEntity<SeatResponse> getSeat(
+            @PathVariable Long gameId,
+            @PathVariable Long seatId
+    ) {
+        return ResponseEntity.ok(seatService.getSeat(gameId, seatId));
     }
 }
