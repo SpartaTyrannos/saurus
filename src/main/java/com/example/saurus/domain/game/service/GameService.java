@@ -1,5 +1,6 @@
 package com.example.saurus.domain.game.service;
 
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.game.dto.request.GameSaveRequestDto;
 import com.example.saurus.domain.game.dto.request.GameUpdateRequestDto;
 import com.example.saurus.domain.game.dto.response.GameResponseDto;
@@ -13,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.ObjectUtils;
@@ -27,10 +29,6 @@ public class GameService {
 
     @Transactional
     public GameSaveResponseDto saveGame(AuthUser authUser, @Valid GameSaveRequestDto gameSaveRequestDto) {
-
-        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
-            throw new CustomException("Permission denied");
-        }
 
         Game newGame = new Game(
                 gameSaveRequestDto.getTitle(),
@@ -77,7 +75,7 @@ public class GameService {
     public GameResponseDto findGame(long gameId) {
 
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new CustomException("Game not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
 
         return new GameResponseDto(
                 game.getId(),
@@ -92,12 +90,8 @@ public class GameService {
     @Transactional
     public GameUpdateResponseDto updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequestDto gameUpdateRequestDto) {
 
-        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
-            throw new CustomException("Permission denied");
-        }
-
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new CustomException("Game not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
 
         game.updateGame(
                 gameUpdateRequestDto.getTitle(),
@@ -121,12 +115,8 @@ public class GameService {
     @Transactional
     public void deleteGame(AuthUser authUser, long gameId) {
 
-        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
-            throw new CustomException("Permission denied");
-        }
-
         Game game = gameRepository.findById(gameId)
-                .orElseThrow(() -> new CustomException("Game not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
 
         gameRepository.delete(game);
     }

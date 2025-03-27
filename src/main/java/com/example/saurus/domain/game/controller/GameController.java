@@ -1,5 +1,6 @@
 package com.example.saurus.domain.game.controller;
 
+import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.game.dto.request.GameSaveRequestDto;
 import com.example.saurus.domain.game.dto.request.GameUpdateRequestDto;
 import com.example.saurus.domain.game.dto.response.GameResponseDto;
@@ -23,6 +24,7 @@ public class GameController {
 
     private final GameService gameService;
 
+    @Admin
     @PostMapping
     public ResponseEntity<GameSaveResponseDto> saveGame(
             @AuthenticationPrincipal AuthUser authUser,
@@ -51,6 +53,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.findGame(gameId));
     }
 
+    @Admin
     @PutMapping("/{gameId}")
     public ResponseEntity<GameUpdateResponseDto> updateGame(
             @AuthenticationPrincipal AuthUser authUser,
@@ -60,6 +63,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequestDto));
     }
 
+    @Admin
     @DeleteMapping("/{gameId}")
     public void deleteGame(
             @AuthenticationPrincipal AuthUser authUser,
