@@ -1,5 +1,7 @@
 package com.example.saurus.domain.common.aop;
 
+import com.example.saurus.domain.common.exception.CustomException;
+import com.example.saurus.domain.user.enums.UserRole;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.Aspect;
 import com.example.saurus.domain.common.dto.AuthUser;
