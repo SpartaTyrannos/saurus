@@ -27,7 +27,6 @@ public class GameController {
     @Admin
     @PostMapping
     public ResponseEntity<GameSaveResponseDto> saveGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody GameSaveRequestDto gameSaveRequestDto
     ) {
         return ResponseEntity.ok(gameService.saveGame(gameSaveRequestDto));
@@ -35,7 +34,6 @@ public class GameController {
 
     @GetMapping
     public ResponseEntity<Page<GamesResponseDto>> findGamesByCondition(
-            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String title,
@@ -47,7 +45,6 @@ public class GameController {
 
     @GetMapping("/{gameId}")
     public ResponseEntity<GameResponseDto> findGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
         return ResponseEntity.ok(gameService.findGame(gameId));
@@ -56,7 +53,6 @@ public class GameController {
     @Admin
     @PutMapping("/{gameId}")
     public ResponseEntity<GameUpdateResponseDto> updateGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId,
             @Valid @RequestBody GameUpdateRequestDto gameUpdateRequestDto
     ) {
@@ -66,7 +62,6 @@ public class GameController {
     @Admin
     @DeleteMapping("/{gameId}")
     public void deleteGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
         gameService.deleteGame(gameId);
