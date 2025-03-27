@@ -1,6 +1,5 @@
 package com.example.saurus.domain.user.controller;
 
-import com.example.saurus.domain.common.annotation.User;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.user.dto.request.UserDeleteRequestDto;
 import com.example.saurus.domain.user.dto.request.UserUpdateRequestDto;

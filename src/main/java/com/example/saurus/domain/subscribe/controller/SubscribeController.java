@@ -1,6 +1,7 @@
 package com.example.saurus.domain.subscribe.controller;
 
 import com.example.saurus.domain.common.annotation.User;
+import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.subscribe.dto.response.SubscribeResponseDto;
 import com.example.saurus.domain.subscribe.service.SubscribeService;
 import lombok.RequiredArgsConstructor;
