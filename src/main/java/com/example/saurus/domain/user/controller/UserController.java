@@ -9,6 +9,7 @@ import com.example.saurus.domain.user.service.UserService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,14 +21,14 @@ public class UserController {
 
     // 내 정보 조회
     @GetMapping("/my")
-    public ResponseEntity<UserResponseDto> getUser(AuthUser authUser) {
+    public ResponseEntity<UserResponseDto> getUser(@AuthenticationPrincipal AuthUser authUser) {
         return ResponseEntity.ok(userService.getUser(authUser.getId()));
     }
 
     // 내 정보 수정
     @PutMapping("/my")
     public ResponseEntity<UserResponseDto> updateProfile(
-            AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody UserUpdateRequestDto userUpdateRequest
     ) {
         return ResponseEntity.ok(userService.updateProfile(authUser.getId(), userUpdateRequest));
@@ -36,7 +37,7 @@ public class UserController {
     // 회원 탈퇴
     @PostMapping("/my")
     public ResponseEntity<String> deleteUser(
-            AuthUser authUser,
+            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody UserDeleteRequestDto userDeleteRequest
     ) {
         return ResponseEntity.ok(userService.deleteUser(authUser.getId(), userDeleteRequest));
