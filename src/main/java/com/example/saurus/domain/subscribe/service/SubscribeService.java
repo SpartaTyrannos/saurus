@@ -1,11 +1,13 @@
 package com.example.saurus.domain.subscribe.service;
 
+import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.membership.entity.Membership;
 import com.example.saurus.domain.membership.service.MembershipService;
 import com.example.saurus.domain.subscribe.dto.response.SubscribeResponseDto;
 import com.example.saurus.domain.subscribe.entity.Subscribe;
 import com.example.saurus.domain.subscribe.repository.SubscribeRepository;
+import com.example.saurus.domain.user.entity.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;

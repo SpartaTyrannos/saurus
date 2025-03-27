@@ -1,5 +1,6 @@
 package com.example.saurus.domain.order.service;
 
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.order.OrderStatus;
 import com.example.saurus.domain.order.dto.MetaDto;
 import com.example.saurus.domain.order.dto.request.OrderCreateRequestDto;
@@ -21,6 +22,7 @@ import com.example.saurus.domain.user.entity.User;
 import com.example.saurus.domain.user.repository.UserRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.transaction.annotation.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -50,14 +52,14 @@ public class OrderService {
      */
     public OrderResponseDto createOrder(OrderCreateRequestDto request, Long userId) {
         // 사용자 조회
-        User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("존재하지 않는 사용자입니다."));
+        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"존재하지 않는 사용자입니다."));
 
         if (request.getSeatIdList() == null || request.getSeatIdList().isEmpty()) {
-            throw new IllegalArgumentException("좌석이 존재하지 않습니다.");
+            throw new CustomException(HttpStatus.NOT_FOUND,"좌석이 존재하지 않습니다.");
         }
 
         if (request.getSeatIdList().size() > 4) {
-            throw new IllegalArgumentException("1인당 최대 4장까지만 예매가 가능합니다.");
+            throw new CustomException(HttpStatus.BAD_REQUEST,"1인당 최대 4장까지만 예매가 가능합니다.");
         }
 
         /*
@@ -66,14 +68,14 @@ public class OrderService {
          * */
         List<Seat> seats = seatRepository.findAllById(request.getSeatIdList());
         if (seats.size() != request.getSeatIdList().size()) {
-            throw new IllegalArgumentException("하나 이상의 좌석을 찾을 수 없습니다.");
+            throw new CustomException(HttpStatus.BAD_REQUEST,"하나 이상의 좌석을 찾을 수 없습니다.");
         }
 
         // 좌석 별로 해당 경기의 좌석이 맞는지 확인
         for (Seat seat : seats) {
             Long gameSeatId = seat.getSection().getGame().getId();
             if (!request.getGameId().equals(gameSeatId)) {
-                throw new IllegalArgumentException("해당 경기 좌석이 아닙니다.");
+                throw new CustomException(HttpStatus.BAD_REQUEST,"해당 경기 좌석이 아닙니다.");
             }
         }
 
@@ -132,7 +134,8 @@ public class OrderService {
                 ticketCount,
                 discountRate,
                 discountedPrice,
-                order.getCreatedAt().toString());
+                order.getCreatedAt().toString(),
+                payment.getPaymentMethod());
     }
 
     // 주문 전체 조회 (페이징)
@@ -158,7 +161,8 @@ public class OrderService {
                             ticketCount,
                             discountRate,
                             order.getTotalPrice(),
-                            order.getCreatedAt().toString()
+                            order.getCreatedAt().toString(),
+                            order.getPayment().getPaymentMethod()
                     );
                 }).collect(Collectors.toList());
 
@@ -173,10 +177,10 @@ public class OrderService {
     public OrderResponseDto getOrder(Long userId, Long orderId) {
 
         Order order = orderRepository.findOrderWithTicketsById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("해당 주문이 없습니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"해당 주문이 없습니다."));
 
         if (!order.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("해당 주문은 사용자의 주문이 아닙니다.");
+            throw new CustomException(HttpStatus.BAD_REQUEST,"해당 주문은 사용자의 주문이 아닙니다.");
         }
 
         int ticketCount = order.getTickets().size();
@@ -194,7 +198,8 @@ public class OrderService {
                 ticketCount,
                 discountRate,
                 order.getTotalPrice(),
-                order.getCreatedAt().toString()
+                order.getCreatedAt().toString(),
+                order.getPayment().getPaymentMethod()
         );
     }
 
@@ -202,21 +207,22 @@ public class OrderService {
     // 주문 취소 -> 주문,티켓,결제 모두 한 트랙잭션 내에 처리
     public CancelOrderResponseDto cancelOrder(Long userId, Long orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"존재하지 않는 주문입니다."));
 
         if (!order.getUser().getId().equals(userId)) {
-            throw new IllegalArgumentException("해당 주문은 사용자의 주문이 아닙니다.");
+            throw new CustomException(HttpStatus.BAD_REQUEST,"해당 주문은 사용자의 주문이 아닙니다.");
         }
         if (order.getStatus() == OrderStatus.CANCELLED) {
-            throw new IllegalArgumentException("이미 취소된 주문입니다.");
+            throw new CustomException(HttpStatus.BAD_REQUEST,"이미 취소된 주문입니다.");
         }
 
         Payment payment = paymentRepository.findByOrder(order)
-                .orElseThrow(() -> new IllegalArgumentException("결제 정보가 존재하지 않습니다."));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"결제 정보가 존재하지 않습니다."));
 
         if (payment.getPaymentStatus() == PaymentStatus.SUCCESS) {
 
             // 실제 환불 로직 필요
+
             payment.setPaymentStatus(PaymentStatus.CANCELLED);
             paymentRepository.save(payment);
         }
