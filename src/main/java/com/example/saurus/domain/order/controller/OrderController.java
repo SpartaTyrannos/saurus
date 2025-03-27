@@ -1,7 +1,10 @@
 package com.example.saurus.domain.order.controller;
 
 import com.example.saurus.domain.common.annotation.User;
+
 import com.example.saurus.domain.common.dto.AuthUser;
+
+
 import com.example.saurus.domain.order.dto.request.OrderCreateRequestDto;
 import com.example.saurus.domain.order.dto.response.CancelOrderResponseDto;
 import com.example.saurus.domain.order.dto.response.OrderListResponseDto;
@@ -21,14 +24,13 @@ import java.util.List;
 
 
 @RestController
-@RequestMapping("/api/v1/orders")
 @RequiredArgsConstructor
 public class OrderController {
 
     private final OrderService orderService;
 
     @User
-    @PostMapping
+    @PostMapping("/api/v1/orders")
     public ResponseEntity<OrderResponseDto> createOrder(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam("gameId") Long gameId,
@@ -50,7 +52,7 @@ public class OrderController {
 
     // 주문 다건 조회
     @User
-    @GetMapping
+    @GetMapping("/api/v1/my/orders")
     public ResponseEntity<OrderListResponseDto> getOrders(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "0") int page
@@ -63,7 +65,7 @@ public class OrderController {
 
    // 주문 단건 조회
     @User
-    @GetMapping("/{orderId}")
+    @GetMapping("/api/v1/my/orders/{orderId}")
     public ResponseEntity<OrderResponseDto> getOrder(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long orderId
@@ -75,7 +77,7 @@ public class OrderController {
 
     // 주문 취소
     @User
-    @DeleteMapping("/{orderId}")
+    @DeleteMapping("/api/v1/orders/{orderId}")
     public ResponseEntity<CancelOrderResponseDto> cancelOrder(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long orderId
