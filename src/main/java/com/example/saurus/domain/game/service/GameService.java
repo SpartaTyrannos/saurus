@@ -28,9 +28,7 @@ public class GameService {
     @Transactional
     public GameSaveResponse saveGame(AuthUser authUser, @Valid GameSaveRequest gameSaveRequest) {
 
-        User user = User.fromAuthUser(authUser);
-
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
@@ -94,8 +92,7 @@ public class GameService {
     @Transactional
     public GameUpdateResponse updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequest gameUpdateRequest) {
 
-        User user = User.fromAuthUser(authUser);
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
@@ -124,8 +121,7 @@ public class GameService {
     @Transactional
     public void deleteGame(AuthUser authUser, long gameId) {
 
-        User user = User.fromAuthUser(authUser);
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
