@@ -6,7 +6,6 @@ import lombok.RequiredArgsConstructor;
 @Getter
 @RequiredArgsConstructor
 public enum Teams {
-    SPART_TYRANNOS,
     SAMSUNG_LIONS,
     DOOSAN_BEARS,
     LG_TWINS,

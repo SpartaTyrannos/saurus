@@ -30,7 +30,7 @@ public class GameService {
 
         User user = User.fromAuthUser(authUser);
 
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
@@ -55,11 +55,9 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GamesResponse> findGamesByCondition(AuthUser authUser, int page, int size, String title, LocalDateTime startDate, LocalDateTime endDate) {
+    public Page<GamesResponse> findGamesByCondition(int page, int size, String title, LocalDateTime startDate, LocalDateTime endDate) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
-
-        User user = User.fromAuthUser(authUser);
 
         Page<Game> games;
         if (title.isEmpty()) {
@@ -78,9 +76,7 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public GameResponse findGame(AuthUser authUser, long gameId) {
-
-        User user = User.fromAuthUser(authUser);
+    public GameResponse findGame(long gameId) {
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new CustomException("Game not found"));
@@ -99,8 +95,7 @@ public class GameService {
     public GameUpdateResponse updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequest gameUpdateRequest) {
 
         User user = User.fromAuthUser(authUser);
-
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
@@ -130,8 +125,7 @@ public class GameService {
     public void deleteGame(AuthUser authUser, long gameId) {
 
         User user = User.fromAuthUser(authUser);
-
-        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ADMIN")) {
+        if (!ObjectUtils.nullSafeEquals(user.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 

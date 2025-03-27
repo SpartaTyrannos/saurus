@@ -1,9 +1,7 @@
 package com.example.saurus.domain.game.dto.response;
 
 import com.example.saurus.domain.game.enums.Teams;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 

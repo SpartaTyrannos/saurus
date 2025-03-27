@@ -17,12 +17,13 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDateTime;
 
 @RestController
+@RequestMapping("/api/v1/games")
 @RequiredArgsConstructor
 public class GameController {
 
     private final GameService gameService;
 
-    @PostMapping("/games")
+    @PostMapping
     public ResponseEntity<GameSaveResponse> saveGame(
             @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody GameSaveRequest gameSaveRequest
@@ -30,7 +31,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.saveGame(authUser, gameSaveRequest));
     }
 
-    @GetMapping("/games")
+    @GetMapping
     public ResponseEntity<Page<GamesResponse>> findGamesByCondition(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "1") int page,
@@ -39,18 +40,18 @@ public class GameController {
             @RequestParam(defaultValue = "1000-01-01T00:00:00") LocalDateTime startDate,
             @RequestParam(defaultValue = "9999-12-31T23:59:59") LocalDateTime endDate
     ) {
-        return ResponseEntity.ok(gameService.findGamesByCondition(authUser, page, size, title, startDate, endDate));
+        return ResponseEntity.ok(gameService.findGamesByCondition(page, size, title, startDate, endDate));
     }
 
-    @GetMapping("/games/{gameId}")
+    @GetMapping("/{gameId}")
     public ResponseEntity<GameResponse> findGame(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
-        return ResponseEntity.ok(gameService.findGame(authUser, gameId));
+        return ResponseEntity.ok(gameService.findGame(gameId));
     }
 
-    @PutMapping("/games/{gameId}")
+    @PutMapping("/{gameId}")
     public ResponseEntity<GameUpdateResponse> updateGame(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId,
@@ -59,7 +60,7 @@ public class GameController {
         return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequest));
     }
 
-    @DeleteMapping("/games/{gameId}")
+    @DeleteMapping("/{gameId}")
     public void deleteGame(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
