@@ -19,3 +19,4 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     //좌석 중복 방지 체크
     boolean existsBySectionIdAndSeatRowAndNumberAndDeletedAtIsNull(Long sectionId, String seatRow, String number);
 }
+
