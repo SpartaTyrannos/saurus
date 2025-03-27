@@ -1,10 +1,14 @@
 package com.example.saurus.domain.user.entity;
 
+import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.common.entity.BaseEntity;
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.user.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.core.GrantedAuthority;
 
 @Getter
 @Entity
@@ -38,6 +42,24 @@ public class User extends BaseEntity {
         this.name = name;
         this.phone = phone;
         this.userRole = userRole;
+    }
+
+    private User(Long id, String email, String name, String phone, UserRole userRole) {
+        this.id = id;
+        this.email = email;
+        this.name = name;
+        this.phone = phone;
+        this.userRole = userRole;
+    }
+
+    public static User fromAuthUser(AuthUser authUser) {
+        UserRole role = authUser.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .map(UserRole::valueOf)
+                .findFirst()
+                .orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, "Invalid role"));
+
+        return new User(authUser.getId(), authUser.getEmail(), authUser.getName(), authUser.getPhone(), role);
     }
 
     public void changePassword(String password) {
