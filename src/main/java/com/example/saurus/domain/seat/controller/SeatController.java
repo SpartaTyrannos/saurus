@@ -1,5 +1,6 @@
 package com.example.saurus.domain.seat.controller;
 
+import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
 import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
@@ -25,6 +26,7 @@ public class SeatController {
 
     private final SeatService seatService;
 
+    @Admin
     @PostMapping
     public ResponseEntity<SeatResponse> createSeat(
             @PathVariable Long gameId,
@@ -35,9 +37,11 @@ public class SeatController {
         return ResponseEntity.ok(seatService.createSeat(authUser, gameId, sectionId, request));
     }
 
+    @Admin
     @PutMapping("/{seatId}")
     public ResponseEntity<SeatResponse> updateSeat(
             @PathVariable Long gameId,
+            @PathVariable Long sectionId,
             @PathVariable Long seatId,
             @RequestBody @Valid SeatUpdateRequest request,
             @AuthenticationPrincipal AuthUser authUser
@@ -45,9 +49,11 @@ public class SeatController {
         return ResponseEntity.ok(seatService.updateSeat(authUser, gameId, seatId, request));
     }
 
+    @Admin
     @DeleteMapping("/{seatId}")
     public ResponseEntity<Void> deleteSeat(
             @PathVariable Long gameId,
+            @PathVariable Long sectionId,
             @PathVariable Long seatId,
             @AuthenticationPrincipal AuthUser authUser
     ) {
@@ -59,7 +65,7 @@ public class SeatController {
     public ResponseEntity<Page<SeatResponse>> getSeats(
             @PathVariable Long gameId,
             @PathVariable Long sectionId,
-            @PageableDefault(size = 10, sort = "id", direction = Sort.Direction.ASC) Pageable pageable
+            @PageableDefault(sort = "id", direction = Sort.Direction.ASC) Pageable pageable
     ) {
         return ResponseEntity.ok(seatService.getSeatsBySectionId(gameId, sectionId, pageable));
     }
@@ -67,6 +73,7 @@ public class SeatController {
     @GetMapping("/{seatId}")
     public ResponseEntity<SeatResponse> getSeat(
             @PathVariable Long gameId,
+            @PathVariable Long sectionId,
             @PathVariable Long seatId
     ) {
         return ResponseEntity.ok(seatService.getSeat(gameId, seatId));

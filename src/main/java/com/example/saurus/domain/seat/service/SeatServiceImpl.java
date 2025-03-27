@@ -28,7 +28,6 @@ public class SeatServiceImpl implements SeatService {
     private final SectionRepository sectionRepository;
 
     @Override
-    @Admin
     @Transactional
     public SeatResponse createSeat(AuthUser authUser, Long gameId, Long sectionId, SeatCreateRequest request) {
 
@@ -49,7 +48,6 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    @Admin
     @Transactional
     public SeatResponse updateSeat(AuthUser authUser, Long gameId, Long seatId, SeatUpdateRequest request) {
 
@@ -59,7 +57,6 @@ public class SeatServiceImpl implements SeatService {
     }
 
     @Override
-    @Admin
     @Transactional
     public void deleteSeat(AuthUser authUser, Long gameId, Long seatId) {
 
