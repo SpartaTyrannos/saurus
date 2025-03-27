@@ -1,11 +1,11 @@
 package com.example.saurus.domain.game.controller;
 
-import com.example.saurus.domain.game.dto.request.GameSaveRequest;
-import com.example.saurus.domain.game.dto.request.GameUpdateRequest;
-import com.example.saurus.domain.game.dto.response.GameResponse;
-import com.example.saurus.domain.game.dto.response.GameSaveResponse;
-import com.example.saurus.domain.game.dto.response.GameUpdateResponse;
-import com.example.saurus.domain.game.dto.response.GamesResponse;
+import com.example.saurus.domain.game.dto.request.GameSaveRequestDto;
+import com.example.saurus.domain.game.dto.request.GameUpdateRequestDto;
+import com.example.saurus.domain.game.dto.response.GameResponseDto;
+import com.example.saurus.domain.game.dto.response.GameSaveResponseDto;
+import com.example.saurus.domain.game.dto.response.GameUpdateResponseDto;
+import com.example.saurus.domain.game.dto.response.GamesResponseDto;
 import com.example.saurus.domain.game.service.GameService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -24,15 +24,15 @@ public class GameController {
     private final GameService gameService;
 
     @PostMapping
-    public ResponseEntity<GameSaveResponse> saveGame(
+    public ResponseEntity<GameSaveResponseDto> saveGame(
             @AuthenticationPrincipal AuthUser authUser,
-            @Valid @RequestBody GameSaveRequest gameSaveRequest
+            @Valid @RequestBody GameSaveRequestDto gameSaveRequestDto
     ) {
-        return ResponseEntity.ok(gameService.saveGame(authUser, gameSaveRequest));
+        return ResponseEntity.ok(gameService.saveGame(authUser, gameSaveRequestDto));
     }
 
     @GetMapping
-    public ResponseEntity<Page<GamesResponse>> findGamesByCondition(
+    public ResponseEntity<Page<GamesResponseDto>> findGamesByCondition(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -44,7 +44,7 @@ public class GameController {
     }
 
     @GetMapping("/{gameId}")
-    public ResponseEntity<GameResponse> findGame(
+    public ResponseEntity<GameResponseDto> findGame(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
@@ -52,12 +52,12 @@ public class GameController {
     }
 
     @PutMapping("/{gameId}")
-    public ResponseEntity<GameUpdateResponse> updateGame(
+    public ResponseEntity<GameUpdateResponseDto> updateGame(
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId,
-            @Valid @RequestBody GameUpdateRequest gameUpdateRequest
+            @Valid @RequestBody GameUpdateRequestDto gameUpdateRequestDto
     ) {
-        return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequest));
+        return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequestDto));
     }
 
     @DeleteMapping("/{gameId}")

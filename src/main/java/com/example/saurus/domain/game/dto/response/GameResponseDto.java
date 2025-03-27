@@ -6,20 +6,21 @@ import lombok.Getter;
 import java.time.LocalDateTime;
 
 @Getter
-public class GameSaveResponse {
+public class GameResponseDto {
 
+    private final Long id;
     private final String title;
     private final String place;
-    private final String description;
-    private final Teams opponent;
+    private final String opponent;
     private final LocalDateTime gameTime;
     private final LocalDateTime ticketOpen;
 
-    public GameSaveResponse(String title, String place, String description, Teams opponent, LocalDateTime gameTime, LocalDateTime ticketOpen) {
+
+    public GameResponseDto(Long id, String title, String place, Teams opponent, LocalDateTime gameTime, LocalDateTime ticketOpen) {
+        this.id = id;
         this.title = title;
         this.place = place;
-        this.description = description;
-        this.opponent = opponent;
+        this.opponent = opponent.toString();
         this.gameTime = gameTime;
         this.ticketOpen = ticketOpen;
     }

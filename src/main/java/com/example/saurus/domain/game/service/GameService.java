@@ -1,11 +1,11 @@
 package com.example.saurus.domain.game.service;
 
-import com.example.saurus.domain.game.dto.request.GameSaveRequest;
-import com.example.saurus.domain.game.dto.request.GameUpdateRequest;
-import com.example.saurus.domain.game.dto.response.GameResponse;
-import com.example.saurus.domain.game.dto.response.GameSaveResponse;
-import com.example.saurus.domain.game.dto.response.GameUpdateResponse;
-import com.example.saurus.domain.game.dto.response.GamesResponse;
+import com.example.saurus.domain.game.dto.request.GameSaveRequestDto;
+import com.example.saurus.domain.game.dto.request.GameUpdateRequestDto;
+import com.example.saurus.domain.game.dto.response.GameResponseDto;
+import com.example.saurus.domain.game.dto.response.GameSaveResponseDto;
+import com.example.saurus.domain.game.dto.response.GameUpdateResponseDto;
+import com.example.saurus.domain.game.dto.response.GamesResponseDto;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
 import jakarta.validation.Valid;
@@ -26,23 +26,23 @@ public class GameService {
     private final GameRepository gameRepository;
 
     @Transactional
-    public GameSaveResponse saveGame(AuthUser authUser, @Valid GameSaveRequest gameSaveRequest) {
+    public GameSaveResponseDto saveGame(AuthUser authUser, @Valid GameSaveRequestDto gameSaveRequestDto) {
 
         if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
         }
 
         Game newGame = new Game(
-                gameSaveRequest.getTitle(),
-                gameSaveRequest.getPlace(),
-                gameSaveRequest.getDescription(),
-                gameSaveRequest.getOpponent(),
-                gameSaveRequest.getGameTime(),
-                gameSaveRequest.getTicketOpen()
+                gameSaveRequestDto.getTitle(),
+                gameSaveRequestDto.getPlace(),
+                gameSaveRequestDto.getDescription(),
+                gameSaveRequestDto.getOpponent(),
+                gameSaveRequestDto.getGameTime(),
+                gameSaveRequestDto.getTicketOpen()
                 );
 
         Game savedGame = gameRepository.save(newGame);
-        return new GameSaveResponse(
+        return new GameSaveResponseDto(
                 savedGame.getTitle(),
                 savedGame.getPlace(),
                 savedGame.getDescription(),
@@ -53,7 +53,7 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public Page<GamesResponse> findGamesByCondition(int page, int size, String title, LocalDateTime startDate, LocalDateTime endDate) {
+    public Page<GamesResponseDto> findGamesByCondition(int page, int size, String title, LocalDateTime startDate, LocalDateTime endDate) {
 
         Pageable pageable = PageRequest.of(page - 1, size);
 
@@ -64,7 +64,7 @@ public class GameService {
             games = gameRepository.findAllByTitleAndDate(pageable, title, startDate, endDate);
         }
 
-        return games.map(game -> new GamesResponse(
+        return games.map(game -> new GamesResponseDto(
                 game.getId(),
                 game.getTitle(),
                 game.getPlace(),
@@ -74,12 +74,12 @@ public class GameService {
     }
 
     @Transactional(readOnly = true)
-    public GameResponse findGame(long gameId) {
+    public GameResponseDto findGame(long gameId) {
 
         Game game = gameRepository.findById(gameId)
                 .orElseThrow(() -> new CustomException("Game not found"));
 
-        return new GameResponse(
+        return new GameResponseDto(
                 game.getId(),
                 game.getTitle(),
                 game.getPlace(),
@@ -90,7 +90,7 @@ public class GameService {
     }
 
     @Transactional
-    public GameUpdateResponse updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequest gameUpdateRequest) {
+    public GameUpdateResponseDto updateGame(AuthUser authUser, long gameId, @Valid GameUpdateRequestDto gameUpdateRequestDto) {
 
         if (!ObjectUtils.nullSafeEquals(authUser.getRole(), "ROLE_ADMIN")) {
             throw new CustomException("Permission denied");
@@ -100,15 +100,15 @@ public class GameService {
                 .orElseThrow(() -> new CustomException("Game not found"));
 
         game.updateGame(
-                gameUpdateRequest.getTitle(),
-                gameUpdateRequest.getPlace(),
-                gameUpdateRequest.getDescription(),
-                gameUpdateRequest.getOpponent(),
-                gameUpdateRequest.getGameTime(),
-                gameUpdateRequest.getTicketOpen()
+                gameUpdateRequestDto.getTitle(),
+                gameUpdateRequestDto.getPlace(),
+                gameUpdateRequestDto.getDescription(),
+                gameUpdateRequestDto.getOpponent(),
+                gameUpdateRequestDto.getGameTime(),
+                gameUpdateRequestDto.getTicketOpen()
         );
 
-        return new GameUpdateResponse(
+        return new GameUpdateResponseDto(
                 game.getTitle(),
                 game.getPlace(),
                 game.getDescription(),

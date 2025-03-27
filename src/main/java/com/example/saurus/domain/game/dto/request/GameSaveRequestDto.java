@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class GameUpdateRequest {
+public class GameSaveRequestDto {
 
     @NotBlank(message = "제목은 필수값입니다.")
     private String title;
