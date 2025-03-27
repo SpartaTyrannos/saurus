@@ -48,6 +48,7 @@ public class AuthService {
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getName(),
+                savedUser.getPhone(),
                 savedUser.getUserRole()
         );
 
@@ -71,7 +72,7 @@ public class AuthService {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "잘못된 비밀번호입니다.");
         }
 
-        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getName(), user.getUserRole());
+        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getName(), user.getPhone(), user.getUserRole());
 
         return new SigninResponseDto(bearerToken);
     }

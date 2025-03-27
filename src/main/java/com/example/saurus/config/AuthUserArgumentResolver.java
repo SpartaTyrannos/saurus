@@ -1,13 +1,15 @@
 package com.example.saurus.config;
 
+import com.example.saurus.domain.common.annotation.Admin;
+import com.example.saurus.domain.common.annotation.User;
 import com.example.saurus.domain.common.exception.CustomException;
-import com.example.saurus.domain.common.annotation.Auth;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.user.enums.UserRole;
 import io.micrometer.common.lang.Nullable;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.support.WebDataBinderFactory;
 import org.springframework.web.context.request.NativeWebRequest;
 import org.springframework.web.method.support.HandlerMethodArgumentResolver;
@@ -17,14 +19,7 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
 // 논의 필요
     @Override
     public boolean supportsParameter(MethodParameter parameter) {
-        boolean hasAuthAnnotation = parameter.getParameterAnnotation(Auth.class) != null;
-        boolean isAuthUserType = parameter.getParameterType().equals(AuthUser.class);
-
-        if (hasAuthAnnotation != isAuthUserType) {
-            throw new CustomException(HttpStatus.UNAUTHORIZED, "@Auth와 AuthUser 타입은 함께 사용되어야 합니다.");
-        }
-
-        return hasAuthAnnotation;
+        return parameter.getParameterType().equals(AuthUser.class); // 수정
     }
 
     @Override
@@ -34,16 +29,14 @@ public class AuthUserArgumentResolver implements HandlerMethodArgumentResolver {
             NativeWebRequest webRequest,
             @Nullable WebDataBinderFactory binderFactory
     ) {
-        HttpServletRequest request = (HttpServletRequest) webRequest.getNativeRequest();
+        // SecurityContext에서 인증 객체를 꺼냄
+        var authentication = SecurityContextHolder.getContext().getAuthentication();
 
-        // JwtFilter 에서 set 한 userId, email, name, userRole 값을 가져옴
-        Long userId = (Long) request.getAttribute("userId");
-        String email = (String) request.getAttribute("email");
-        String name = (String) request.getAttribute("name");
-        String phone = (String) request.getAttribute("phone");
-        UserRole userRole = UserRole.of((String) request.getAttribute("userRole"));
+        if (authentication == null || !(authentication.getPrincipal() instanceof AuthUser)) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "유저 인증 정보가 없습니다.");
+        }
 
-        return new AuthUser(userId, email, name, phone, userRole);
+        return (AuthUser) authentication.getPrincipal();
     }
 
 }
