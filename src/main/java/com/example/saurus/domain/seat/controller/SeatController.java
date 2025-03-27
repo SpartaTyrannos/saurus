@@ -1,18 +1,23 @@
 package com.example.saurus.domain.seat.controller;
 
+import com.example.saurus.domain.common.annotation.Auth;
+import com.example.saurus.domain.common.dto.AuthUser;
+import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
 import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
 import com.example.saurus.domain.seat.dto.response.SeatResponse;
 import com.example.saurus.domain.seat.service.SeatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/games/{gameId}/sections/{sectionId}/seats")
+@RequestMapping("/api/v1/games/{gameId}/sections/{sectionId}/seats")
 @RequiredArgsConstructor
 public class SeatController {
 
@@ -21,24 +26,27 @@ public class SeatController {
     @PostMapping
     public ResponseEntity<SeatResponse> createSeat(
             @PathVariable Long sectionId,
-            @RequestBody @Valid SeatCreateRequest request
+            @RequestBody @Valid SeatCreateRequest request,
+            @AuthenticationPrincipal AuthUser authUser
     ) {
-        SeatResponse response = seatService.createSeat(sectionId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(seatService.createSeat(authUser, sectionId, request));
     }
 
     @PutMapping("/{seatId}")
     public ResponseEntity<SeatResponse> updateSeat(
             @PathVariable Long seatId,
-            @RequestBody @Valid SeatUpdateRequest request
+            @RequestBody @Valid SeatUpdateRequest request,
+            @AuthenticationPrincipal AuthUser authUser
     ) {
-        SeatResponse response = seatService.updateSeat(seatId, request);
-        return ResponseEntity.ok(response);
+        return ResponseEntity.ok(seatService.updateSeat(authUser, seatId, request));
     }
 
     @DeleteMapping("/{seatId}")
-    public ResponseEntity<Void> deleteSeat(@PathVariable Long seatId) {
-        seatService.deleteSeat(seatId);
+    public ResponseEntity<Void> deleteSeat(
+            @PathVariable Long seatId,
+            @AuthenticationPrincipal AuthUser authUser
+    ) {
+        seatService.deleteSeat(authUser, seatId);
         return ResponseEntity.noContent().build();
     }
 

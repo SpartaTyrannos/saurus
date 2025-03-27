@@ -8,19 +8,16 @@ import lombok.*;
 
 @Entity
 @Table(name = "seats", uniqueConstraints = {
-        @UniqueConstraint(columnNames = {"section_id", "seat_row", "number"})
-})
+        @UniqueConstraint(columnNames = {"section_id", "seat_row", "number"})})
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
 public class Seat extends BaseEntity {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 🔗 단방향 Section 참조
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "section_id", nullable = false)
     private Section section;
@@ -39,9 +36,5 @@ public class Seat extends BaseEntity {
         this.seatRow = seatrow;
         this.number = number;
         this.seatType = seatType;
-    }
-
-    public void setSection(Section section) {
-        this.section = section;
     }
 }

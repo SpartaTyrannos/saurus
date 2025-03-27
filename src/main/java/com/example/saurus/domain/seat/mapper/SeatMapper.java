@@ -19,7 +19,7 @@ public class SeatMapper {
 
     public static void updateEntity(Seat seat, SeatUpdateRequest request) {
         seat.update(
-                request.getRow(),
+                request.getSeatRow(),
                 request.getNumber().toString(),
                 request.getSeatType()
         );
