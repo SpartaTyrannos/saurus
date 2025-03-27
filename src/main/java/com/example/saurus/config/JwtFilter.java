@@ -1,5 +1,6 @@
 package com.example.saurus.config;
 
+import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.user.enums.UserRole;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -55,23 +56,33 @@ public class JwtFilter extends OncePerRequestFilter {
                 return;
             }
 
-            Long userId = Long.parseLong(claims.getSubject());
+            String subject = claims.getSubject();
+            log.info("Parsed subject from JWT: {}", subject);
+            if (subject == null) {
+                throw new IllegalArgumentException("JWT subject (userId) 누락됨");
+            }
+            Long userId = Long.parseLong(subject);
             String email = claims.get("email", String.class);
             String name = claims.get("name", String.class);
+            String phone = claims.get("phone", String.class);
             String roleString = claims.get("userRole", String.class);
             UserRole userRole = UserRole.of(roleString);
 
+            AuthUser authUser = new AuthUser(userId, email, name, phone, userRole);
             // SecurityContext에 인증 객체 등록
             UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                    email,
+                    authUser,
                     null,
                     List.of(new SimpleGrantedAuthority(userRole.getAuthority())) // 또는 userRole.getAuthority()
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 
             request.setAttribute("userId", Long.parseLong(claims.getSubject()));
+            log.info("JwtFilter set userId: {}", userId);
+
             request.setAttribute("email", claims.get("email"));
             request.setAttribute("name", claims.get("name"));
+            request.setAttribute("phone", claims.get("phone"));
             request.setAttribute("userRole", claims.get("userRole"));
 
             chain.doFilter(request, response);
@@ -85,7 +96,7 @@ public class JwtFilter extends OncePerRequestFilter {
             log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.", e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰입니다.");
         } catch (Exception e) {
-            log.error("Invalid JWT token, 유효하지 않는 JWT 토큰 입니다.", e);
+            log.error("Exception during JWT processing: {}", e.getMessage(), e);
             response.sendError(HttpServletResponse.SC_BAD_REQUEST, "유효하지 않는 JWT 토큰입니다.");
         }
     }

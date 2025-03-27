@@ -35,14 +35,21 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
-    public String createToken(Long userId, String email, String name, UserRole userRole) {
+    public String createToken(Long userId, String email, String name, String phone, UserRole userRole) {
         Date date = new Date();
+
+        if (userId == null) {
+            throw new IllegalArgumentException("userId는 null일 수 없습니다");
+        }
+
+        log.info("Creating token for userId: {}", userId);
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(String.valueOf(userId))
                         .claim("email", email)
                         .claim("name", name)
+                        .claim("phone", phone)
                         .claim("userRole", userRole.name()) // spring security enum 양식
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME))
                         .setIssuedAt(date) // 발급일
