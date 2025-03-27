@@ -1,15 +1,12 @@
 package com.example.saurus.domain.section.controller;
 
-import com.example.saurus.domain.common.annotation.Auth;
 import com.example.saurus.domain.common.dto.AuthUser;
-import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
 import com.example.saurus.domain.section.service.SectionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;

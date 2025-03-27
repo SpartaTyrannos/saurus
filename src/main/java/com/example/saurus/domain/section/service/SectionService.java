@@ -1,9 +1,6 @@
 package com.example.saurus.domain.section.service;
 
 import com.example.saurus.domain.common.dto.AuthUser;
-import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
-import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
-import com.example.saurus.domain.seat.dto.response.SeatResponse;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
