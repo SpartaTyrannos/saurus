@@ -1,6 +1,7 @@
 package com.example.saurus.domain.section.entity;
 
 import com.example.saurus.domain.common.entity.BaseEntity;
+import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.seat.entity.Seat;
 import com.example.saurus.domain.seat.entity.SeatType;
 import com.fasterxml.jackson.annotation.JsonIgnore;

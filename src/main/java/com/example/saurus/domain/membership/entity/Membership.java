@@ -17,8 +17,23 @@ public class Membership extends BaseEntity {
 
     private String name;
 
-    public Membership(String name) {
+    private Integer price;
+
+    private Double discount;
+
+    private Integer year;
+
+    public Membership(String name, Integer price, Double discount, Integer year) {
         this.name = name;
+        this.price = price;
+        this.discount = discount;
+        this.year = year;
     }
 
+    public void update(String name, Integer price, Double discount, Integer year) {
+        this.name = name;
+        this.price = price;
+        this.discount = discount;
+        this.year = year;
+    }
 }
