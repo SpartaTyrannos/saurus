@@ -12,7 +12,7 @@ import lombok.Setter;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name = "subscribes")
+@Table(name="tickets")
 public class Ticket extends BaseEntity {
 
     @Id
