@@ -1,5 +1,6 @@
 package com.example.saurus.domain.game.controller;
 
+import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.game.dto.request.GameSaveRequestDto;
 import com.example.saurus.domain.game.dto.request.GameUpdateRequestDto;
 import com.example.saurus.domain.game.dto.response.GameResponseDto;
@@ -23,17 +24,16 @@ public class GameController {
 
     private final GameService gameService;
 
+    @Admin
     @PostMapping
     public ResponseEntity<GameSaveResponseDto> saveGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @Valid @RequestBody GameSaveRequestDto gameSaveRequestDto
     ) {
-        return ResponseEntity.ok(gameService.saveGame(authUser, gameSaveRequestDto));
+        return ResponseEntity.ok(gameService.saveGame(gameSaveRequestDto));
     }
 
     @GetMapping
     public ResponseEntity<Page<GamesResponseDto>> findGamesByCondition(
-            @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(required = false) String title,
@@ -45,26 +45,25 @@ public class GameController {
 
     @GetMapping("/{gameId}")
     public ResponseEntity<GameResponseDto> findGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
         return ResponseEntity.ok(gameService.findGame(gameId));
     }
 
+    @Admin
     @PutMapping("/{gameId}")
     public ResponseEntity<GameUpdateResponseDto> updateGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId,
             @Valid @RequestBody GameUpdateRequestDto gameUpdateRequestDto
     ) {
-        return ResponseEntity.ok(gameService.updateGame(authUser, gameId, gameUpdateRequestDto));
+        return ResponseEntity.ok(gameService.updateGame(gameId, gameUpdateRequestDto));
     }
 
+    @Admin
     @DeleteMapping("/{gameId}")
     public void deleteGame(
-            @AuthenticationPrincipal AuthUser authUser,
             @PathVariable long gameId
     ) {
-        gameService.deleteGame(authUser, gameId);
+        gameService.deleteGame(gameId);
     }
 }
