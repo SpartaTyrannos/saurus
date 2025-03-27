@@ -1,0 +1,14 @@
+package com.example.saurus.domain.ticket.repository;
+
+import com.example.saurus.domain.order.entity.Order;
+import com.example.saurus.domain.ticket.entity.Ticket;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
+import java.util.List;
+
+@Repository
+public interface TicketRepository extends JpaRepository<Ticket, Long> {
+
+    List<Ticket> findAllByOrder(Order order);
+}
