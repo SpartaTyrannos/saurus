@@ -5,6 +5,8 @@ import com.example.saurus.domain.auth.dto.request.SigninRequestDto;
 import com.example.saurus.domain.auth.dto.request.SignupRequestDto;
 import com.example.saurus.domain.auth.dto.response.SigninResponseDto;
 import com.example.saurus.domain.auth.dto.response.SignupResponseDto;
+import com.example.saurus.domain.auth.entity.RefreshToken;
+import com.example.saurus.domain.auth.repository.RefreshTokenRepository;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.user.entity.User;
 import com.example.saurus.domain.user.enums.UserRole;
@@ -22,6 +24,7 @@ public class AuthService {
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     @Transactional
     public SignupResponseDto signup(SignupRequestDto requestDto) {
@@ -72,8 +75,22 @@ public class AuthService {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "잘못된 비밀번호입니다.");
         }
 
-        String bearerToken = jwtUtil.createToken(user.getId(), user.getEmail(), user.getName(), user.getPhone(), user.getUserRole());
+        String accessToken = jwtUtil.createToken(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getUserRole()
+        );
+        String refreshToken = jwtUtil.createRefreshToken(user.getId());
 
-        return new SigninResponseDto(bearerToken);
+        // 리프레시 토큰 DB 저장 또는 갱신 (Rotation 전략)
+        refreshTokenRepository.findById(user.getId())
+                .ifPresentOrElse(
+                        existing -> existing.updateToken(refreshToken),
+                        () -> refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken))
+                );
+
+        return new SigninResponseDto(accessToken, refreshToken);
     }
 }

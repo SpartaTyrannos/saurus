@@ -20,7 +20,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // JWT
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/api/v1/auths/**", "/error").permitAll() // 로그인/회원가입은 허용
+                        .requestMatchers("/api/v1/auths/**", "/api/v1/auths/refresh").permitAll() // 로그인/회원가입은 허용
                         .anyRequest().authenticated() // 그 외는 인증 필요
                 )
                 .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class) //jwtFilter
