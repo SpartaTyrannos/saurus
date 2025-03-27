@@ -71,8 +71,7 @@ public class JwtFilter extends OncePerRequestFilter {
             AuthUser authUser = new AuthUser(userId, email, name, phone, userRole);
             // SecurityContext에 인증 객체 등록
             JwtAuthenticationToken authentication = new JwtAuthenticationToken(
-                    authUser,
-                    List.of(new SimpleGrantedAuthority(userRole.getAuthority()))
+                    authUser
             );
             SecurityContextHolder.getContext().setAuthentication(authentication);
 

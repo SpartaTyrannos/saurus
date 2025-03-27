@@ -1,18 +1,16 @@
 package com.example.saurus.config;
 
+import com.example.saurus.domain.common.dto.AuthUser;
 import org.springframework.security.authentication.AbstractAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-
-import java.util.Collection;
 
 public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
-    private final Object principal;
+    private final AuthUser authUser;
 
-    public JwtAuthenticationToken(Object principal, Collection<? extends GrantedAuthority> authorities) {
-        super(authorities);
-        this.principal = principal;
-        setAuthenticated(true); // 토큰 유효성 JwtFilter에서 검증
+    public JwtAuthenticationToken(AuthUser authUser) {
+        super(authUser.getAuthorities());
+        this.authUser = authUser;
+        setAuthenticated(true);
     }
 
     @Override
@@ -22,6 +20,6 @@ public class JwtAuthenticationToken extends AbstractAuthenticationToken {
 
     @Override
     public Object getPrincipal() {
-        return principal;
+        return authUser;
     }
 }
