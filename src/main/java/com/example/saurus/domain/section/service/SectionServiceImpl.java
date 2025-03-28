@@ -5,6 +5,8 @@ import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
+import com.example.saurus.domain.seat.entity.Seat;
+import com.example.saurus.domain.seat.repository.SeatRepository;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
@@ -19,6 +21,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Service
 @RequiredArgsConstructor
@@ -26,6 +31,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class SectionServiceImpl implements SectionService {
 
     private final SectionRepository sectionRepository;
+    private final SeatRepository seatRepository;
     private final GameRepository gameRepository;
 
     @Override
@@ -40,6 +46,9 @@ public class SectionServiceImpl implements SectionService {
 
         Section section = SectionMapper.toEntity(game, request);
         section = sectionRepository.save(section);
+
+        createSeatsForSection(section);
+
         return SectionMapper.toResponse(section);
     }
 
@@ -74,6 +83,24 @@ public class SectionServiceImpl implements SectionService {
         return sectionRepository.findById(sectionId)
                 .filter(s -> s.getDeletedAt() == null)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 구역이 존재하지 않거나 삭제되었습니다."));
+    }
+
+    private void createSeatsForSection(Section section) {
+        List<Seat> seats = new ArrayList<>();
+
+        for (char row = 'A'; row <= 'Z'; row++) {
+            for (int number = 1; number <= 10; number++) {
+                Seat seat = Seat.builder()
+                        .section(section)
+                        .seatRow(String.valueOf(row))
+                        .number(String.valueOf(number))
+                        .seatType(section.getType()) // 🎯 섹션 타입과 동일하게 설정
+                        .build();
+                seats.add(seat);
+            }
+        }
+
+        seatRepository.saveAll(seats);
     }
 
     // 검증
