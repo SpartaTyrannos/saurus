@@ -62,11 +62,11 @@ public class MembershipService {
 
     @Transactional  // 관리자 권한
     public String updateMembership(Long membershipId, MembershipRequestDto request) {
-        Membership membership = findMembershipById(membershipId);
-
         if (membershipRepository.existsByName(request.getName())) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "해당 멤버십 이름이 이미 존재 합니다.");
         }
+
+        Membership membership = findMembershipById(membershipId);
 
         membership.update(request.getName(), request.getPrice(), request.getDiscount(), request.getYear());
 
