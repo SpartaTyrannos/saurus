@@ -18,6 +18,8 @@ public interface SeatRepository extends JpaRepository<Seat, Long> {
     // 소프트 딜리트 필터링 포함 단건 조회
     Optional<Seat> findByIdAndDeletedAtIsNull(Long seatId);
 
+    List<Seat> findBySectionIdAndDeletedAtIsNull(Long sectionId);
+
     //좌석 중복 방지 체크
     boolean existsBySectionIdAndSeatRowAndNumberAndDeletedAtIsNull(Long sectionId, String seatRow, String number);
 
