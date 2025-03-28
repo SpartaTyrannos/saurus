@@ -28,13 +28,13 @@ public class SubscribeService {
 
     @Transactional  // 유저 권한
     public String saveSubscribe(AuthUser authUser, Long membershipId) {
-        User user = User.fromAuthUser(authUser);
-
         Membership membership = membershipService.findMembershipById(membershipId);
 
         if (membership.getYear() != Year.now().getValue()) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "해당 멤버십은 " + membership.getYear() + "년 전용입니다.");
         }
+
+        User user = User.fromAuthUser(authUser);
 
         if (subscribeRepository.existsByUserIdAndMembershipId(user.getId(), membershipId)) {
             throw new CustomException(HttpStatus.BAD_REQUEST, "이미 구독중인 멤버십입니다.");
