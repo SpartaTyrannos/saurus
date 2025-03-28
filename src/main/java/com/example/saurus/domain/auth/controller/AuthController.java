@@ -30,12 +30,14 @@ public class AuthController {
     private final UserRepository userRepository;
 
     @PostMapping("/signup")
-    public ResponseEntity<SignupResponseDto> signup(@Valid @RequestBody SignupRequestDto signupRequest) {
+    public ResponseEntity<SignupResponseDto> signup(
+            @Valid @RequestBody SignupRequestDto signupRequest) {
         return ResponseEntity.ok(authService.signup(signupRequest));
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<SigninResponseDto> signin(@Valid @RequestBody SigninRequestDto signinRequest) {
+    public ResponseEntity<SigninResponseDto> signin(
+            @Valid @RequestBody SigninRequestDto signinRequest) {
         return ResponseEntity.ok(authService.signin(signinRequest));
     }
 
@@ -44,6 +46,7 @@ public class AuthController {
             @RequestHeader("Refresh-Token") String bearerToken) {
 
         String refreshToken = jwtUtil.substringToken(bearerToken);
+
         Claims claims;
 
         try {
@@ -64,14 +67,22 @@ public class AuthController {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "유저 없음"));
 
-        String newAccessToken = jwtUtil.createToken(user.getId(),
+        String newAccessToken = jwtUtil.createToken(
+                user.getId(),
                 user.getEmail(),
                 user.getName(),
                 user.getPhone(),
                 user.getUserRole()
         );
-        String newRefreshToken = jwtUtil.createRefreshToken(userId);
+        String newRefreshToken = jwtUtil.createRefreshToken(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getUserRole()
+        );
         saved.updateToken(newRefreshToken);
+        refreshTokenRepository.save(saved);
 
         return ResponseEntity.ok(new SigninResponseDto(newAccessToken, newRefreshToken));
 

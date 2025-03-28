@@ -31,30 +31,47 @@ public class JwtFilter extends OncePerRequestFilter {
             throws ServletException, IOException {
 
         String authorizationHeader = request.getHeader("Authorization");
+        String refreshTokenHeader = request.getHeader("Refresh-Token");
 
-        if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
-            String jwt = jwtUtil.substringToken(authorizationHeader);
 
-            try {
+        try {
+            if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
+                String jwt = jwtUtil.substringToken(authorizationHeader);
                 Claims claims = jwtUtil.extractClaims(jwt);
 
                 if (SecurityContextHolder.getContext().getAuthentication() == null) {
                     setAuthentication(claims);
                 }
-            } catch (SecurityException | MalformedJwtException e) {
-                log.error("Invalid JWT signature, 유효하지 않는 JWT 서명 입니다.", e);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않는 JWT 서명입니다.");
-            } catch (ExpiredJwtException e) {
-                log.error("Expired JWT token, 만료된 JWT token 입니다.", e);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 JWT 토큰입니다.");
-            } catch (UnsupportedJwtException e) {
-                log.error("Unsupported JWT token, 지원되지 않는 JWT 토큰 입니다.", e);
-                response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰입니다.");
-            } catch (Exception e) {
-                log.error("Internal server error", e);
-                response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
             }
+            // ✅ AccessToken 없고 RefreshToken만 있는 경우
+            else if (authorizationHeader == null &&
+                    refreshTokenHeader != null && refreshTokenHeader.startsWith("Bearer ")) {
+
+                String refreshToken = jwtUtil.substringToken(refreshTokenHeader);
+                Claims claims = jwtUtil.extractClaims(refreshToken); // 여기서 예외나면 catch에서 처리됨
+
+                if (SecurityContextHolder.getContext().getAuthentication() == null) {
+                    setAuthentication(claims);
+                }
+            }
+        } catch (SecurityException | MalformedJwtException e) {
+            log.error("Invalid JWT signature", e);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않는 JWT 서명입니다.");
+            return;
+        } catch (ExpiredJwtException e) {
+            log.error("Expired JWT token", e);
+            response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "만료된 JWT 토큰입니다.");
+            return;
+        } catch (UnsupportedJwtException e) {
+            log.error("Unsupported JWT token", e);
+            response.sendError(HttpServletResponse.SC_BAD_REQUEST, "지원되지 않는 JWT 토큰입니다.");
+            return;
+        } catch (Exception e) {
+            log.error("Internal server error", e);
+            response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
+            return;
         }
+
         chain.doFilter(request, response);
     }
 

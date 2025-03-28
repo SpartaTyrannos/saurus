@@ -82,7 +82,12 @@ public class AuthService {
                 user.getPhone(),
                 user.getUserRole()
         );
-        String refreshToken = jwtUtil.createRefreshToken(user.getId());
+        String refreshToken = jwtUtil.createRefreshToken(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getUserRole());
 
         // 리프레시 토큰 DB 저장 또는 갱신 (Rotation 전략)
         refreshTokenRepository.findById(user.getId())
