@@ -65,5 +65,6 @@ public class GameController {
             @PathVariable long gameId
     ) {
         gameService.deleteGame(gameId);
+
     }
 }

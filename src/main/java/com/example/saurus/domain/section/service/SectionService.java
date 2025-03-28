@@ -1,6 +1,7 @@
 package com.example.saurus.domain.section.service;
 
 import com.example.saurus.domain.common.dto.AuthUser;
+import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
@@ -17,7 +18,12 @@ public interface SectionService {
 
     void deleteSection(AuthUser authUser, Long gameId, Long sectionId);
 
+    void deleteSectionsByGame(Game game);
+
     Page<SectionResponse> getSectionsByGameId(Long gameId, Pageable pageable);
 
     SectionResponse getSection(Long gameId, Long sectionId);
+
+    void createDefaultSectionsAndSeats(Game game);
+
 }
