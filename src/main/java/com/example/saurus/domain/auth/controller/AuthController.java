@@ -39,17 +39,24 @@ public class AuthController {
         return ResponseEntity.ok(authService.signin(signinRequest));
     }
 
+    // Refresh 엔드포인트: Authorization 헤더로 refresh token 전달
     @PostMapping("/refresh")
     public ResponseEntity<SigninResponseDto> refreshToken(
-            @RequestHeader("Refresh-Token") String bearerToken) {
+            @RequestHeader("Authorization") String bearerToken) {
 
-        String refreshToken = jwtUtil.substringToken(bearerToken);
+        String token = jwtUtil.substringToken(bearerToken);
         Claims claims;
 
         try {
-            claims = jwtUtil.extractClaims(refreshToken);
+            claims = jwtUtil.extractClaims(token);
         } catch (ExpiredJwtException e) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, "Refresh Token 만료. 다시 로그인 필요");
+        }
+
+
+        String tokenType = claims.get("tokenType", String.class);
+        if (!"refresh".equalsIgnoreCase(tokenType)) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, "Access Token이 제공되었습니다. Refresh Token 필요");
         }
 
         Long userId = Long.parseLong(claims.getSubject());
@@ -70,10 +77,15 @@ public class AuthController {
                 user.getPhone(),
                 user.getUserRole()
         );
-        String newRefreshToken = jwtUtil.createRefreshToken(userId);
+        String newRefreshToken = jwtUtil.createRefreshToken(user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getUserRole()
+        );
         saved.updateToken(newRefreshToken);
 
         return ResponseEntity.ok(new SigninResponseDto(newAccessToken, newRefreshToken));
-
     }
 }
+

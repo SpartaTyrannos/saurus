@@ -35,7 +35,7 @@ public class AuthService {
 
         String encodedPassword = passwordEncoder.encode(requestDto.getPassword());
 
-       UserRole userRole = UserRole.ROLE_USER;
+        UserRole userRole = UserRole.ROLE_USER;
 
         User newUser = new User(
                 requestDto.getEmail(),
@@ -47,7 +47,16 @@ public class AuthService {
 
         User savedUser = userRepository.save(newUser);
 
-        String bearerToken = jwtUtil.createToken(
+        String accessToken = jwtUtil.createToken(
+                savedUser.getId(),
+                savedUser.getEmail(),
+                savedUser.getName(),
+                savedUser.getPhone(),
+                savedUser.getUserRole()
+        );
+
+
+        String refreshToken = jwtUtil.createRefreshToken(
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getName(),
@@ -56,7 +65,7 @@ public class AuthService {
         );
 
         return new SignupResponseDto(
-                bearerToken,
+                accessToken,
                 savedUser.getId(),
                 savedUser.getEmail(),
                 savedUser.getName(),
@@ -82,9 +91,15 @@ public class AuthService {
                 user.getPhone(),
                 user.getUserRole()
         );
-        String refreshToken = jwtUtil.createRefreshToken(user.getId());
+        String refreshToken = jwtUtil.createRefreshToken(
+                user.getId(),
+                user.getEmail(),
+                user.getName(),
+                user.getPhone(),
+                user.getUserRole()
+        );
 
-        // 리프레시 토큰 DB 저장 또는 갱신 (Rotation 전략)
+
         refreshTokenRepository.findById(user.getId())
                 .ifPresentOrElse(
                         existing -> existing.updateToken(refreshToken),
