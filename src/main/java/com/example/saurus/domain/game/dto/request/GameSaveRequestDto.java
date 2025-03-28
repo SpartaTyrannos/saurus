@@ -7,7 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.lang.Nullable;
 
 import java.time.LocalDateTime;
@@ -33,5 +32,5 @@ public class GameSaveRequestDto {
     private LocalDateTime gameTime;
 
     @NotNull(message = "티켓오픈시간은 필수값입니다.")
-    private LocalDateTime ticketOpen;
+    private LocalDateTime gameTime;
 }

@@ -35,10 +35,11 @@ public class Order extends BaseEntity {
     @OneToMany(mappedBy = "order",cascade = CascadeType.ALL,orphanRemoval = true)
     private List<Ticket> tickets = new ArrayList<>();
 
-    private int amount;
+    private int ticketAmount;
 
     private int totalPrice;
 
+    @Enumerated(EnumType.STRING)
     private OrderStatus status;
 
 }
