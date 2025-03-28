@@ -44,7 +44,7 @@ public class OrderController {
         requestDto.setSeatIdList(seatIds);
         requestDto.setPaymentMethod(methodRequest.getPaymentMethod());
 
-        Long userId = authUser.getUserId();
+        Long userId = authUser.getId();
 
         OrderResponseDto response = orderService.createOrder(requestDto, userId);
         return ResponseEntity.ok(response);
@@ -58,7 +58,7 @@ public class OrderController {
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam(defaultValue = "0") int page
     ) {
-        Long userId = authUser.getUserId();
+        Long userId = authUser.getId();
         Pageable pageable = PageRequest.of(page, 10, Sort.by("createdAt").descending());
         OrderListResponseDto response = orderService.getOrders(userId, pageable);
         return ResponseEntity.ok(response);
@@ -71,7 +71,7 @@ public class OrderController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long orderId
     ) {
-        Long userId = authUser.getUserId();
+        Long userId = authUser.getId();
         OrderResponseDto response = orderService.getOrder(userId, orderId);
         return ResponseEntity.ok(response);
     }
@@ -83,7 +83,7 @@ public class OrderController {
             @AuthenticationPrincipal AuthUser authUser,
             @PathVariable Long orderId
     ) {
-        Long userId = authUser.getUserId();
+        Long userId = authUser.getId();
         CancelOrderResponseDto response = orderService.cancelOrder(userId, orderId);
         return ResponseEntity.ok(response);
     }
