@@ -101,6 +101,8 @@ public class OrderService {
             ticketCount++;
         }
 
+        order.setTicketAmount(ticketCount);
+
         // 현재 시간 가져오기
         LocalDateTime now = LocalDateTime.now();
 
@@ -135,7 +137,9 @@ public class OrderService {
                 discountRate,
                 discountedPrice,
                 order.getCreatedAt().toString(),
-                payment.getPaymentMethod());
+                payment.getPaymentMethod(),
+                order.getStatus()
+        );
     }
 
     // 주문 전체 조회 (페이징)
@@ -162,7 +166,8 @@ public class OrderService {
                             discountRate,
                             order.getTotalPrice(),
                             order.getCreatedAt().toString(),
-                            order.getPayment().getPaymentMethod()
+                            order.getPayment().getPaymentMethod(),
+                            order.getStatus()
                     );
                 }).collect(Collectors.toList());
 
@@ -199,7 +204,8 @@ public class OrderService {
                 discountRate,
                 order.getTotalPrice(),
                 order.getCreatedAt().toString(),
-                order.getPayment().getPaymentMethod()
+                order.getPayment().getPaymentMethod(),
+                order.getStatus()
         );
     }
 

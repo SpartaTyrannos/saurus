@@ -2,6 +2,7 @@ package com.example.saurus.domain.game.dto.request;
 
 import com.example.saurus.domain.game.enums.Teams;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,10 +25,10 @@ public class GameUpdateRequestDto {
     @Nullable
     private String description;
 
-    @NotBlank(message = "상대팀은 필수값입니다.")
+    @NotNull(message = "상대팀은 필수값입니다.")
     private Teams opponent;
 
-    @NotBlank(message = "경기시간은 필수값입니다.")
+    @NotNull(message = "경기시간은 필수값입니다.")
     @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gameTime;
 
