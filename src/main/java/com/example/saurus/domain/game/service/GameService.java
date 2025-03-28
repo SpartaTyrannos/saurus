@@ -17,7 +17,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 
@@ -56,7 +55,7 @@ public class GameService {
         Pageable pageable = PageRequest.of(page - 1, size);
 
         Page<Game> games;
-        if (title.isEmpty()) {
+        if (title == null || title.isEmpty()) {
             games = gameRepository.findAllByDate(pageable, startDate, endDate);
         } else {
             games = gameRepository.findAllByTitleAndDate(pageable, title, startDate, endDate);
