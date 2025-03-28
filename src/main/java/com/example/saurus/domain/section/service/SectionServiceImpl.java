@@ -1,12 +1,11 @@
 package com.example.saurus.domain.section.service;
 
-import com.example.saurus.domain.common.annotation.Admin;
 import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
-import com.example.saurus.domain.seat.entity.Seat;
-import com.example.saurus.domain.seat.repository.SeatRepository;
+import com.example.saurus.domain.seat.enums.SeatType;
+import com.example.saurus.domain.seat.service.SeatService;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
@@ -14,16 +13,13 @@ import com.example.saurus.domain.section.entity.Section;
 import com.example.saurus.domain.section.mapper.SectionMapper;
 import com.example.saurus.domain.section.repository.SectionRepository;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
 import java.util.List;
-
 
 @Service
 @RequiredArgsConstructor
@@ -31,8 +27,8 @@ import java.util.List;
 public class SectionServiceImpl implements SectionService {
 
     private final SectionRepository sectionRepository;
-    private final SeatRepository seatRepository;
     private final GameRepository gameRepository;
+    private final SeatService seatService;
 
     @Override
     @Transactional
@@ -47,7 +43,8 @@ public class SectionServiceImpl implements SectionService {
         Section section = SectionMapper.toEntity(game, request);
         section = sectionRepository.save(section);
 
-        createSeatsForSection(section);
+        // 좌석 생성 위임
+        seatService.createSeatsForSection(section);
 
         return SectionMapper.toResponse(section);
     }
@@ -60,13 +57,26 @@ public class SectionServiceImpl implements SectionService {
         return SectionMapper.toResponse(section);
     }
 
-
     @Override
     @Transactional
     public void deleteSection(AuthUser authUser, Long gameId, Long sectionId) {
         Section section = getSectionWithGameCheck(gameId, sectionId);
         section.delete();
+
     }
+
+    @Transactional
+    public void deleteSectionsByGame(Game game) {
+        List<Section> sections = sectionRepository.findByGameIdAndDeletedAtIsNull(game.getId());
+
+        for (Section section : sections) {
+            section.delete();
+
+            // Seat 삭제는 SeatService에 위임
+            seatService.deleteSeatsBySection(section);
+        }
+    }
+
 
     @Override
     public Page<SectionResponse> getSectionsByGameId(Long gameId, Pageable pageable) {
@@ -74,36 +84,42 @@ public class SectionServiceImpl implements SectionService {
                 .map(SectionMapper::toResponse);
     }
 
+
     @Override
     public SectionResponse getSection(Long gameId, Long sectionId) {
         return SectionMapper.toResponse(getSectionWithGameCheck(gameId, sectionId));
     }
 
-    private Section getActiveSection(Long sectionId) {
-        return sectionRepository.findById(sectionId)
-                .filter(s -> s.getDeletedAt() == null)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "해당 구역이 존재하지 않거나 삭제되었습니다."));
-    }
+    @Override
+    @Transactional
+    public void createDefaultSectionsAndSeats(Game game) {
+        List<SeatType> types = List.of(SeatType.values());
 
-    private void createSeatsForSection(Section section) {
-        List<Seat> seats = new ArrayList<>();
-
-        for (char row = 'A'; row <= 'Z'; row++) {
-            for (int number = 1; number <= 10; number++) {
-                Seat seat = Seat.builder()
-                        .section(section)
-                        .seatRow(String.valueOf(row))
-                        .number(String.valueOf(number))
-                        .seatType(section.getType()) // 🎯 섹션 타입과 동일하게 설정
+        for (SeatType type : SeatType.values()) {
+            for (int i = 1; i <= 3; i++) {
+                Section section = Section.builder()
+                        .game(game)
+                        .name(type.name() + " 구역 " + i)
+                        .type(type)
+                        .price(getDefaultPrice(type))
                         .build();
-                seats.add(seat);
+                section = sectionRepository.save(section);
+
+                seatService.createSeatsForSection(section);
             }
         }
-
-        seatRepository.saveAll(seats);
     }
 
-    // 검증
+    private int getDefaultPrice(SeatType seatType) {
+        return switch (seatType) {
+            case VIP -> 30000;
+            case ORANGE -> 25000;
+            case NAVY -> 22000;
+            default -> 20000;
+        };
+    }
+
+
     private Section getSectionWithGameCheck(Long gameId, Long sectionId) {
         Section section = sectionRepository.findById(sectionId)
                 .filter(s -> s.getDeletedAt() == null)
