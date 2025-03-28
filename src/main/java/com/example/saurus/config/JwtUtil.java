@@ -58,7 +58,21 @@ public class JwtUtil {
                         .compact();
     }
 
+    public String createRefreshToken(Long userId, String email, String name, String phone, UserRole userRole) {
+        Date now = new Date();
 
+        return BEARER_PREFIX +
+                Jwts.builder()
+                        .setSubject(String.valueOf(userId))
+                        .claim("email", email)
+                        .claim("name", name)
+                        .claim("phone", phone)
+                        .claim("userRole", userRole.name())
+                        .setIssuedAt(now)
+                        .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
+                        .signWith(key, signatureAlgorithm)
+                        .compact();
+    }
 
     public String substringToken(String tokenValue) {
         if (StringUtils.hasText(tokenValue) && tokenValue.startsWith(BEARER_PREFIX)) {
