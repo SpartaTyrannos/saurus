@@ -9,11 +9,6 @@ import com.example.saurus.domain.game.dto.response.GameUpdateResponseDto;
 import com.example.saurus.domain.game.dto.response.GamesResponseDto;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
-import com.example.saurus.domain.seat.entity.Seat;
-import com.example.saurus.domain.seat.enums.SeatType;
-import com.example.saurus.domain.seat.repository.SeatRepository;
-import com.example.saurus.domain.section.entity.Section;
-import com.example.saurus.domain.section.repository.SectionRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -30,8 +25,6 @@ import java.time.LocalDateTime;
 public class GameService {
 
     private final GameRepository gameRepository;
-    private final SectionRepository sectionRepository;
-    private final SeatRepository seatRepository;
 
     @Transactional
     public GameSaveResponseDto saveGame(@Valid GameSaveRequestDto gameSaveRequestDto) {
@@ -43,12 +36,9 @@ public class GameService {
                 gameSaveRequestDto.getOpponent(),
                 gameSaveRequestDto.getGameTime(),
                 gameSaveRequestDto.getTicketOpen()
-        );
+                );
 
         Game savedGame = gameRepository.save(newGame);
-
-        createDefaultSectionsAndSeats(savedGame);
-
         return new GameSaveResponseDto(
                 savedGame.getTitle(),
                 savedGame.getPlace(),
@@ -128,49 +118,5 @@ public class GameService {
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
 
         gameRepository.delete(game);
-    }
-
-    private void createDefaultSectionsAndSeats(Game game) {
-        for (SeatType seatType : SeatType.values()) {
-            for (int i = 1; i <= 3; i++) {
-                Section section = Section.builder()
-                        .game(game)
-                        .name(seatType.name() + "-" + i)
-                        .type(seatType)
-                        .price(getDefaultPriceBySeatType(seatType))
-                        .build();
-
-                sectionRepository.save(section);
-
-                createSeatsForSection(section);
-            }
-        }
-    }
-
-    private void createSeatsForSection(Section section) {
-        for (char row = 'A'; row <= 'Z'; row++) {
-            for (int number = 1; number <= 10; number++) {
-                Seat seat = Seat.builder()
-                        .section(section)
-                        .seatRow(String.valueOf(row))
-                        .number(String.valueOf(number))
-                        .seatType(section.getType())
-                        .build();
-                seatRepository.save(seat);
-            }
-        }
-    }
-
-    private int getDefaultPriceBySeatType(SeatType seatType) {
-        return switch (seatType) {
-            case VIP -> 30000;
-            case TABLE -> 25000;
-            case EXCITING -> 22000;
-            case BLUE -> 20000;
-            case ORANGE -> 18000;
-            case RED -> 15000;
-            case NAVY -> 12000;
-            case OUT -> 10000;
-        };
     }
 }
