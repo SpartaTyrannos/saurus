@@ -66,7 +66,7 @@ public class OrderService {
          * 좌석 조회
          * 동시성 제어 필요
          * */
-        List<Seat> seats = seatRepository.findAllById(request.getSeatIdList());
+        List<Seat> seats = seatRepository.findAllByIdWithSection(request.getSeatIdList());
         if (seats.size() != request.getSeatIdList().size()) {
             throw new CustomException(HttpStatus.BAD_REQUEST,"하나 이상의 좌석을 찾을 수 없습니다.");
         }

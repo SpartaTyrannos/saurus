@@ -6,19 +6,19 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import jakarta.annotation.PostConstruct;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 
+import jakarta.annotation.PostConstruct;
 import java.security.Key;
 import java.util.Base64;
 import java.util.Date;
 
-@Slf4j(topic = "JwtUtil")
 @Component
+@Slf4j
 public class JwtUtil {
 
     private static final String BEARER_PREFIX = "Bearer ";
@@ -36,6 +36,7 @@ public class JwtUtil {
         key = Keys.hmacShaKeyFor(bytes);
     }
 
+
     public String createToken(Long userId, String email, String name, String phone, UserRole userRole) {
         Date date = new Date();
 
@@ -43,7 +44,7 @@ public class JwtUtil {
             throw new IllegalArgumentException("userId는 null일 수 없습니다");
         }
 
-        log.info("Creating token for userId: {}", userId);
+        log.info("Creating access token for userId: {}", userId);
 
         return BEARER_PREFIX +
                 Jwts.builder()
@@ -51,20 +52,27 @@ public class JwtUtil {
                         .claim("email", email)
                         .claim("name", name)
                         .claim("phone", phone)
-                        .claim("userRole", userRole.name()) // spring security enum 양식
+                        .claim("userRole", userRole.name())
+                        .claim("tokenType", "access")
                         .setExpiration(new Date(date.getTime() + TOKEN_TIME))
-                        .setIssuedAt(date) // 발급일
-                        .signWith(key, signatureAlgorithm) // 암호화 알고리즘
+                        .setIssuedAt(date)
+                        .signWith(key, signatureAlgorithm)
                         .compact();
     }
 
-    public String createRefreshToken(Long userId) {
+
+    public String createRefreshToken(Long userId, String email, String name, String phone, UserRole userRole) {
         Date now = new Date();
         log.info("Creating refresh token for userId: {}", userId);
 
         return BEARER_PREFIX +
                 Jwts.builder()
                         .setSubject(String.valueOf(userId))
+                        .claim("email", email)
+                        .claim("name", name)
+                        .claim("phone", phone)
+                        .claim("userRole", userRole.name())
+                        .claim("tokenType", "refresh")
                         .setExpiration(new Date(now.getTime() + REFRESH_TOKEN_TIME))
                         .setIssuedAt(now)
                         .signWith(key, signatureAlgorithm)
@@ -85,5 +93,5 @@ public class JwtUtil {
                 .parseClaimsJws(token)
                 .getBody();
     }
-
 }
+
