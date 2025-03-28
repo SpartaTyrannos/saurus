@@ -1,5 +1,6 @@
 package com.example.saurus.domain.order.dto.response;
 
+import com.example.saurus.domain.order.OrderStatus;
 import com.example.saurus.domain.payment.PaymentMethod;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -19,4 +20,6 @@ public class OrderResponseDto {
     private int totalPrice;
     private String createdAt;
     private PaymentMethod paymentMethod;
+    private OrderStatus status;
+
 }
