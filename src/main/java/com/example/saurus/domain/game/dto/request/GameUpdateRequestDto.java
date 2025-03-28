@@ -1,6 +1,7 @@
 package com.example.saurus.domain.game.dto.request;
 
 import com.example.saurus.domain.game.enums.Teams;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
