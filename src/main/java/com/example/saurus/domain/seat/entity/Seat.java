@@ -10,7 +10,8 @@ import lombok.*;
 @Table(name = "seats", uniqueConstraints = {
         @UniqueConstraint(columnNames = {"section_id", "seat_row", "number"})})
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Seat extends BaseEntity {
