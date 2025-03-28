@@ -14,4 +14,8 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     // 같은 이름의 구역 중복 체크
     boolean existsByGameIdAndNameAndDeletedAtIsNull(Long gameId, String name);
+
+    // 전체 목록 조회용 (삭제되지 않은 섹션들)
+    List<Section> findByGameIdAndDeletedAtIsNull(Long gameId);
+
 }

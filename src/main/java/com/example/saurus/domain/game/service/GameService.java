@@ -8,7 +8,9 @@ import com.example.saurus.domain.game.dto.response.GameSaveResponseDto;
 import com.example.saurus.domain.game.dto.response.GameUpdateResponseDto;
 import com.example.saurus.domain.game.dto.response.GamesResponseDto;
 import com.example.saurus.domain.game.entity.Game;
+import com.example.saurus.domain.common.entity.BaseEntity;
 import com.example.saurus.domain.game.repository.GameRepository;
+import com.example.saurus.domain.section.service.SectionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -17,7 +19,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.ObjectUtils;
 
 import java.time.LocalDateTime;
 
@@ -26,6 +27,7 @@ import java.time.LocalDateTime;
 public class GameService {
 
     private final GameRepository gameRepository;
+    private final SectionService sectionService;
 
     @Transactional
     public GameSaveResponseDto saveGame(@Valid GameSaveRequestDto gameSaveRequestDto) {
@@ -37,9 +39,12 @@ public class GameService {
                 gameSaveRequestDto.getOpponent(),
                 gameSaveRequestDto.getGameTime(),
                 gameSaveRequestDto.getTicketOpen()
-                );
+        );
 
         Game savedGame = gameRepository.save(newGame);
+
+        sectionService.createDefaultSectionsAndSeats(savedGame);
+
         return new GameSaveResponseDto(
                 savedGame.getTitle(),
                 savedGame.getPlace(),
@@ -56,7 +61,7 @@ public class GameService {
         Pageable pageable = PageRequest.of(page - 1, size);
 
         Page<Game> games;
-        if (title.isEmpty()) {
+        if (title == null || title.isEmpty()) {
             games = gameRepository.findAllByDate(pageable, startDate, endDate);
         } else {
             games = gameRepository.findAllByTitleAndDate(pageable, title, startDate, endDate);
@@ -115,9 +120,11 @@ public class GameService {
     @Transactional
     public void deleteGame(long gameId) {
 
-        Game game = gameRepository.findById(gameId)
+        Game game = gameRepository.findByIdAndDeletedAtIsNull(gameId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Game not found"));
 
-        gameRepository.delete(game);
+        sectionService.deleteSectionsByGame(game);
+
+        game.delete();
     }
 }

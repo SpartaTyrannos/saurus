@@ -66,7 +66,7 @@ public class OrderService {
          * 좌석 조회
          * 동시성 제어 필요
          * */
-        List<Seat> seats = seatRepository.findAllById(request.getSeatIdList());
+        List<Seat> seats = seatRepository.findAllByIdWithSection(request.getSeatIdList());
         if (seats.size() != request.getSeatIdList().size()) {
             throw new CustomException(HttpStatus.BAD_REQUEST,"하나 이상의 좌석을 찾을 수 없습니다.");
         }
@@ -100,6 +100,8 @@ public class OrderService {
             totalTicketPrice += seatPrice;
             ticketCount++;
         }
+
+        order.setTicketAmount(ticketCount);
 
         // 현재 시간 가져오기
         LocalDateTime now = LocalDateTime.now();
@@ -135,7 +137,9 @@ public class OrderService {
                 discountRate,
                 discountedPrice,
                 order.getCreatedAt().toString(),
-                payment.getPaymentMethod());
+                payment.getPaymentMethod(),
+                order.getStatus()
+        );
     }
 
     // 주문 전체 조회 (페이징)
@@ -162,7 +166,8 @@ public class OrderService {
                             discountRate,
                             order.getTotalPrice(),
                             order.getCreatedAt().toString(),
-                            order.getPayment().getPaymentMethod()
+                            order.getPayment().getPaymentMethod(),
+                            order.getStatus()
                     );
                 }).collect(Collectors.toList());
 
@@ -199,7 +204,8 @@ public class OrderService {
                 discountRate,
                 order.getTotalPrice(),
                 order.getCreatedAt().toString(),
-                order.getPayment().getPaymentMethod()
+                order.getPayment().getPaymentMethod(),
+                order.getStatus()
         );
     }
 

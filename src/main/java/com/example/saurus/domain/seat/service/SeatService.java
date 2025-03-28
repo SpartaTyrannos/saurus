@@ -4,8 +4,13 @@ import com.example.saurus.domain.common.dto.AuthUser;
 import com.example.saurus.domain.seat.dto.request.SeatCreateRequest;
 import com.example.saurus.domain.seat.dto.request.SeatUpdateRequest;
 import com.example.saurus.domain.seat.dto.response.SeatResponse;
+import com.example.saurus.domain.seat.entity.Seat;
+import com.example.saurus.domain.section.entity.Section;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+
+import java.util.List;
+import java.util.Optional;
 
 public interface SeatService {
 
@@ -19,4 +24,11 @@ public interface SeatService {
 
     SeatResponse getSeat(Long gameId, Long seatId);
 
+    void createSeatsForSection(Section section);
+
+    void deleteSeatsBySection(Section section);
+
+    Optional<Seat> findByIdAndDeletedAtIsNull(Long seatId);
+
+    boolean existsBySectionIdAndSeatRowAndNumberAndDeletedAtIsNull(Long sectionId, String seatRow, String number);
 }

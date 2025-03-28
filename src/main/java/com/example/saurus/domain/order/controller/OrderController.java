@@ -1,10 +1,7 @@
 package com.example.saurus.domain.order.controller;
 
 import com.example.saurus.domain.common.annotation.User;
-
 import com.example.saurus.domain.common.dto.AuthUser;
-
-
 import com.example.saurus.domain.order.dto.request.OrderCreateRequestDto;
 import com.example.saurus.domain.order.dto.response.CancelOrderResponseDto;
 import com.example.saurus.domain.order.dto.response.OrderListResponseDto;
@@ -21,9 +18,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
-
 @RestController
+@RequestMapping
 @RequiredArgsConstructor
 public class OrderController {
 
