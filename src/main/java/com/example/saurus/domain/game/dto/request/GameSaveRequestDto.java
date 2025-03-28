@@ -1,7 +1,6 @@
 package com.example.saurus.domain.game.dto.request;
 
 import com.example.saurus.domain.game.enums.Teams;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -32,5 +31,5 @@ public class GameSaveRequestDto {
     private LocalDateTime gameTime;
 
     @NotNull(message = "티켓오픈시간은 필수값입니다.")
-    private LocalDateTime gameTime;
+    private LocalDateTime ticketOpen;
 }
