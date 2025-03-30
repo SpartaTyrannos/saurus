@@ -8,7 +8,11 @@ import lombok.NoArgsConstructor;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name="memberships")
+@Table( name = "memberships",
+        indexes = {
+                @Index(name = "idx_membership_name", columnList = "name"),
+                @Index(name = "idx_membership_created", columnList = "created_at DESC"),
+                @Index(name = "idx_membership_year", columnList = "year")})
 public class Membership extends BaseEntity {
 
     @Id

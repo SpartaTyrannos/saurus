@@ -12,7 +12,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name="users")
+@Table( name = "users",
+        indexes = {
+                @Index(name = "idx_user_email", columnList = "email"),
+                @Index(name = "idx_user_id_deleted", columnList = "id, deleted_at")})
 public class User extends BaseEntity {
 
     @Id

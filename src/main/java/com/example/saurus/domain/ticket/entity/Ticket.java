@@ -12,7 +12,10 @@ import lombok.Setter;
 @Setter
 @Entity
 @NoArgsConstructor
-@Table(name="tickets")
+@Table( name="tickets",
+        indexes = {
+                @Index(name = "idx_ticket_order", columnList = "order_id"),
+                @Index(name = "idx_ticket_section", columnList = "section_id")})
 public class Ticket extends BaseEntity {
 
     @Id
