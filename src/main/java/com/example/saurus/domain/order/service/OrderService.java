@@ -3,6 +3,7 @@ package com.example.saurus.domain.order.service;
 import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
+import com.example.saurus.domain.lock.service.LockService;
 import com.example.saurus.domain.order.OrderStatus;
 import com.example.saurus.domain.order.dto.MetaDto;
 import com.example.saurus.domain.order.dto.request.OrderCreateRequestDto;
@@ -31,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -45,6 +47,7 @@ public class OrderService {
     private final SubscribeRepository subscribeRepository;
     private final GameRepository gameRepository;
     private final SectionRepository sectionRepository;
+    private final LockService lockService;
 
     /**
      * 주문 생성 (주문, 티켓, 결제를 한 트랜잭션 내 처리)
@@ -54,75 +57,85 @@ public class OrderService {
      * @return 생성된 주문에 대한 응답 DTO
      */
     public OrderResponseDto createOrder(OrderCreateRequestDto request, Long userId) {
+        String lockKey = "seat_lock:" + request.getSectionId();
 
-        // 사용자 조회
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"존재하지 않는 사용자입니다."));
+        AtomicReference<OrderResponseDto> responseRef = new AtomicReference<>();
 
-        Game game = gameRepository.findById(request.getGameId()).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."));
+        lockService.executeWithLock(lockKey, () -> {
+            // 사용자 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-        Section section = sectionRepository.findWithGameById(request.getSectionId()).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"존재하지 않는 구역입니다."));
+            // 경기, 섹션 조회
+            Game game = gameRepository.findById(request.getGameId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."));
+            Section section = sectionRepository.findWithLockById(request.getSectionId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 구역입니다."));
 
-        if (!game.getId().equals(section.getGame().getId())) {
-            throw new CustomException(HttpStatus.BAD_REQUEST,"해당 경기 구역이 아닙니다.");
-        }
+            // 유효성 검사
+            if (!game.getId().equals(section.getGame().getId())) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "해당 경기 구역이 아닙니다.");
+            }
+            if (section.getCount() < request.getSeatCount()) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "남아있는 좌석 수 부족");
+            }
 
-        if (section.getCount() < request.getSeatCount()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST, "선택한 좌석 개수가 남아 있는 좌석 수보다 많습니다.");
-        }
+            // 좌석 개수 차감
+            section.setCount(section.getCount() - request.getSeatCount());
+            sectionRepository.save(section);
 
-        int count = section.getCount() - request.getSeatCount();
-        section.setCount(count);
-        sectionRepository.save(section);
+            // 주문 생성
+            Order order = new Order();
+            order.setUser(user);
+            order.setTicketAmount(request.getSeatCount());
+            order.setTotalPrice(section.getPrice() * request.getSeatCount());
+            order.setStatus(OrderStatus.CREATED);
+            orderRepository.save(order);
 
-        // 주문 생성
-        Order order = new Order();
-        order.setUser(user);
-        order.setTicketAmount(request.getSeatCount());
-        order.setTotalPrice(section.getPrice() * request.getSeatCount());
-        order.setStatus(OrderStatus.CREATED);
-        orderRepository.save(order);
+            // 티켓 생성
+            for (int i = 0; i < request.getSeatCount(); i++) {
+                Ticket ticket = new Ticket(order, section);
+                ticketRepository.save(ticket);
+            }
 
-        // 티켓 생성
-        for (int i = 1; i <= request.getSeatCount(); i++) {
-            Ticket ticket = new Ticket(order, section);
-            ticketRepository.save(ticket);
-        }
+            // 구독 할인 계산
+            LocalDateTime now = LocalDateTime.now();
+            List<Subscribe> activeSubscriptions = subscribeRepository.findActiveSubscriptions(userId, now);
+            double discountRate = activeSubscriptions.stream()
+                    .findFirst()
+                    .map(sub -> sub.getMembership().getDiscount())
+                    .orElse(0.0);
+            int discountedPrice = (int) (order.getTotalPrice() * (1 - discountRate));
 
-        // 현재 시간 가져오기
-        LocalDateTime now = LocalDateTime.now();
+            // 결제 처리
+            Payment payment = new Payment();
+            payment.setOrder(order);
+            payment.setFinalPrice(discountedPrice);
+            payment.setPaymentMethod(request.getPaymentMethod());
+            payment.setPaymentStatus(PaymentStatus.PENDING);
+            paymentRepository.save(payment);
 
-        // DB에서 유효한 구독만 조회
-        List<Subscribe> activeSubscriptions = subscribeRepository.findActiveSubscriptions(userId, now);
+            payment.setPaymentStatus(PaymentStatus.SUCCESS);
+            paymentRepository.save(payment);
+            order.setStatus(OrderStatus.PAID);
+            orderRepository.save(order);
 
-        // 가장 최신 구독의 할인율 가져오기 (없으면 0.0)
-        double discountRate = activeSubscriptions.stream().findFirst().map(sub -> sub.getMembership().getDiscount()).orElse(0.0);
+            // 결과 저장
+            responseRef.set(new OrderResponseDto(
+                    order.getId(),
+                    userId,
+                    request.getSeatCount(),
+                    discountRate,
+                    discountedPrice,
+                    order.getCreatedAt().toString(),
+                    request.getPaymentMethod(),
+                    OrderStatus.PAID
+            ));
+        });
 
-        int discountedPrice = (int) (order.getTotalPrice() * (1 - discountRate));
-
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setFinalPrice(discountedPrice);
-        payment.setPaymentMethod(request.getPaymentMethod());
-        payment.setPaymentStatus(PaymentStatus.PENDING);
-        paymentRepository.save(payment);
-
-        // 결제 성공 처리
-        payment.setPaymentStatus(PaymentStatus.SUCCESS);
-        paymentRepository.save(payment);
-        order.setStatus(OrderStatus.PAID);
-        orderRepository.save(order);
-
-        return new OrderResponseDto(
-                order.getId(),
-                userId,
-                request.getSeatCount(),
-                discountRate,
-                discountedPrice,
-                order.getCreatedAt().toString(),
-                payment.getPaymentMethod(),
-                order.getStatus()
-        );
+        return responseRef.get();
     }
+
 
     // 주문 전체 조회 (페이징)
     @Transactional(readOnly = true)

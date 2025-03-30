@@ -10,7 +10,7 @@ import lombok.*;
 @Table(name = "sections")
 @Getter
 @Setter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Section extends BaseEntity {
@@ -35,9 +35,6 @@ public class Section extends BaseEntity {
 
     @Column(nullable = false)
     private Integer count;
-
-//    @Version // version 필드를 이용한 Optimistic Locking 적용
-//    private int version;
 
     public void update(String name, Integer price, SeatType type, Integer count) {
         this.name = name;

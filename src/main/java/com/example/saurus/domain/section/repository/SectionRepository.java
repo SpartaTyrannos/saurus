@@ -1,10 +1,14 @@
 package com.example.saurus.domain.section.repository;
 
 import com.example.saurus.domain.section.entity.Section;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -22,5 +26,10 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     @EntityGraph(attributePaths = {"game"})
     Optional<Section> findWithGameById(Long id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM Section s WHERE s.id = :sectionId")
+    Optional<Section> findWithLockById(@Param("sectionId") Long sectionId);
+
 
 }
