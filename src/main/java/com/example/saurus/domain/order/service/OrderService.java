@@ -69,7 +69,7 @@ public class OrderService {
             // 경기, 섹션 조회
             Game game = gameRepository.findById(request.getGameId())
                     .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."));
-            Section section = sectionRepository.findWithLockById(request.getSectionId())
+            Section section = sectionRepository.findWithGameById(request.getSectionId())
                     .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 구역입니다."));
 
             // 유효성 검사
@@ -131,6 +131,7 @@ public class OrderService {
                     request.getPaymentMethod(),
                     OrderStatus.PAID
             ));
+            return responseRef.get();
         });
 
         return responseRef.get();
