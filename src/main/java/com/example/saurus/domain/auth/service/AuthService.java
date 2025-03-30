@@ -12,10 +12,14 @@ import com.example.saurus.domain.user.entity.User;
 import com.example.saurus.domain.user.enums.UserRole;
 import com.example.saurus.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.time.Duration;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -25,6 +29,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final RedisTemplate<String, String> redisTokenTemplate;
 
     @Transactional
     public SignupResponseDto signup(SignupRequestDto requestDto) {
@@ -64,6 +69,8 @@ public class AuthService {
                 savedUser.getUserRole()
         );
 
+        saveRefreshTokenToRedis(savedUser.getId(), refreshToken);
+
         return new SignupResponseDto(
                 accessToken,
                 savedUser.getId(),
@@ -99,13 +106,18 @@ public class AuthService {
                 user.getUserRole()
         );
 
+        String cacheKey = "refreshToken:" + user.getId();
+        String cachedToken = redisTokenTemplate.opsForValue().get(cacheKey);
 
-        refreshTokenRepository.findById(user.getId())
-                .ifPresentOrElse(
-                        existing -> existing.updateToken(refreshToken),
-                        () -> refreshTokenRepository.save(new RefreshToken(user.getId(), refreshToken))
-                );
+        if (cachedToken == null || !cachedToken.equals(refreshToken)) {
+            saveRefreshTokenToRedis(user.getId(), refreshToken);
+        }
 
         return new SigninResponseDto(accessToken, refreshToken);
+    }
+
+    private void saveRefreshTokenToRedis(Long userId, String refreshToken) {
+        String cacheKey = "refreshToken:" + userId;
+        redisTokenTemplate.opsForValue().set(cacheKey, refreshToken, Duration.ofDays(1));
     }
 }
