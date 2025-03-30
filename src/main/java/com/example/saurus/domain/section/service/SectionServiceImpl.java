@@ -53,7 +53,7 @@ public class SectionServiceImpl implements SectionService {
     @Transactional
     public SectionResponse updateSection(AuthUser authUser, Long gameId, Long sectionId, SectionUpdateRequest request) {
         Section section = getSectionWithGameCheck(gameId, sectionId);
-        section.update(request.getName(), request.getPrice(), request.getSeatType(), request.getPrice());
+        section.update(request.getName(), request.getPrice(), request.getSeatType(), request.getCount());
         return SectionMapper.toResponse(section);
     }
 
