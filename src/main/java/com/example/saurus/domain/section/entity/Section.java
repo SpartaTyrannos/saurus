@@ -3,14 +3,13 @@ package com.example.saurus.domain.section.entity;
 import com.example.saurus.domain.common.entity.BaseEntity;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.seat.enums.SeatType;
-import com.example.saurus.domain.seat.entity.Seat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
 @Table(name = "sections")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -34,9 +33,16 @@ public class Section extends BaseEntity {
     @Column(nullable = false, length = 20)
     private SeatType type;
 
-    public void update(String name, Integer price, SeatType type) {
+    @Column(nullable = false)
+    private Integer count;
+
+//    @Version // version 필드를 이용한 Optimistic Locking 적용
+//    private int version;
+
+    public void update(String name, Integer price, SeatType type, Integer count) {
         this.name = name;
         this.price = price;
         this.type = type;
+        this.count = count;
     }
 }

@@ -5,7 +5,7 @@ import com.example.saurus.domain.common.exception.CustomException;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.game.repository.GameRepository;
 import com.example.saurus.domain.seat.enums.SeatType;
-import com.example.saurus.domain.seat.service.SeatService;
+//import com.example.saurus.domain.seat.service.SeatService;
 import com.example.saurus.domain.section.dto.request.SectionCreateRequest;
 import com.example.saurus.domain.section.dto.request.SectionUpdateRequest;
 import com.example.saurus.domain.section.dto.response.SectionResponse;
@@ -28,7 +28,7 @@ public class SectionServiceImpl implements SectionService {
 
     private final SectionRepository sectionRepository;
     private final GameRepository gameRepository;
-    private final SeatService seatService;
+//    private final SeatService seatService;
 
     @Override
     @Transactional
@@ -44,7 +44,7 @@ public class SectionServiceImpl implements SectionService {
         section = sectionRepository.save(section);
 
         // 좌석 생성 위임
-        seatService.createSeatsForSection(section);
+//        seatService.createSeatsForSection(section);
 
         return SectionMapper.toResponse(section);
     }
@@ -53,7 +53,7 @@ public class SectionServiceImpl implements SectionService {
     @Transactional
     public SectionResponse updateSection(AuthUser authUser, Long gameId, Long sectionId, SectionUpdateRequest request) {
         Section section = getSectionWithGameCheck(gameId, sectionId);
-        section.update(request.getName(), request.getPrice(), request.getSeatType());
+        section.update(request.getName(), request.getPrice(), request.getSeatType(), request.getPrice());
         return SectionMapper.toResponse(section);
     }
 
@@ -73,7 +73,7 @@ public class SectionServiceImpl implements SectionService {
             section.delete();
 
             // Seat 삭제는 SeatService에 위임
-            seatService.deleteSeatsBySection(section);
+//            seatService.deleteSeatsBySection(section);
         }
     }
 
@@ -102,10 +102,11 @@ public class SectionServiceImpl implements SectionService {
                         .name(type.name() + " 구역 " + i)
                         .type(type)
                         .price(getDefaultPrice(type))
+                        .count(100)
                         .build();
                 section = sectionRepository.save(section);
 
-                seatService.createSeatsForSection(section);
+//                seatService.createSeatsForSection(section);
             }
         }
     }
