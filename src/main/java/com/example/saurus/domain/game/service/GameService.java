@@ -86,6 +86,7 @@ public class GameService {
                 game.getId(),
                 game.getTitle(),
                 game.getPlace(),
+                game.getDescription(),
                 game.getOpponent(),
                 game.getGameTime(),
                 game.getTicketOpen()
