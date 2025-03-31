@@ -19,9 +19,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table( name = "orders",
-        indexes = {
-                @Index(name = "idx_order_user_created", columnList = "user_id, created_at DESC")})
+@Table( name = "orders")
 public class Order extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

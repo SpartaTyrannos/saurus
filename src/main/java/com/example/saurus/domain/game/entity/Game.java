@@ -13,10 +13,8 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table( name = "games",
-        indexes = {
-                @Index(name = "idx_game_id_deleted", columnList = "id, deleted_at"),
-                @Index(name = "idx_game_title_gameTime", columnList = "title, game_time")})
+
+@Table( name = "games")
 public class Game extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

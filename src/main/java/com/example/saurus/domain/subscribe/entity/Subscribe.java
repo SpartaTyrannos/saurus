@@ -13,10 +13,7 @@ import java.time.Year;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table( name = "subscribes",
-        indexes = {@Index(name = "idx_subscribe_user_created", columnList = "user_id, created_at DESC"),
-                @Index(name = "idx_subscribe_user_membership", columnList = "user_id, membership_id"),
-                @Index(name = "idx_subscribe_active_check", columnList = "user_id, start_date, end_date")})
+@Table( name = "subscribes" )
 public class Subscribe extends BaseEntity {
 
     @Id
