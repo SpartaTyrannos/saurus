@@ -47,7 +47,9 @@ public class OrderService {
     private final SubscribeRepository subscribeRepository;
     private final GameRepository gameRepository;
     private final SectionRepository sectionRepository;
+
     private final RedisLockService redisLockService;  // Redis 기반 락 서비스
+
 
     /**
      * 주문 생성 (주문, 티켓, 결제를 한 트랜잭션 내 처리)
@@ -57,6 +59,7 @@ public class OrderService {
      * @return 생성된 주문에 대한 응답 DTO
      */
     public OrderResponseDto createOrder(OrderCreateRequestDto request, Long userId) {
+
         // 섹션별 락 키 생성 (예: "seat_lock:5" – 구역 ID가 5인 경우)
         String lockKey = "seat_lock:" + request.getSectionId();
 
@@ -123,6 +126,7 @@ public class OrderService {
             order.setStatus(OrderStatus.PAID);
             orderRepository.save(order);
 
+
             // 9. 결과 저장 및 반환
             responseRef.set(new OrderResponseDto(
                     order.getId(),
@@ -135,6 +139,7 @@ public class OrderService {
                     OrderStatus.PAID
             ));
         });
+
         return responseRef.get();
     }
 

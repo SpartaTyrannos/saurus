@@ -13,7 +13,8 @@ import java.time.LocalDateTime;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "games")
+
+@Table( name = "games")
 public class Game extends BaseEntity {
 
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)

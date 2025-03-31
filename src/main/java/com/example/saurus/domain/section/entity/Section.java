@@ -7,7 +7,11 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "sections")
+//@Table( name = "sections")
+@Table( name = "sections",
+        indexes = {
+                @Index(name = "idx_section_game_name_deleted", columnList = "game_id, name, deleted_at"),
+                @Index(name = "idx_section_game_deleted_id", columnList = "game_id, deleted_at, id")})
 @Getter
 @Setter
 @NoArgsConstructor
