@@ -2,7 +2,7 @@ package com.example.saurus.domain.ticket.entity;
 
 import com.example.saurus.domain.common.entity.BaseEntity;
 import com.example.saurus.domain.order.entity.Order;
-import com.example.saurus.domain.seat.entity.Seat;
+import com.example.saurus.domain.section.entity.Section;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -23,13 +23,13 @@ public class Ticket extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private Order order;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seat_id", nullable = false, unique = true)
-    private Seat seat;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "section_id", nullable = false)
+    private Section section;
 
-    public Ticket(Order order, Seat seat) {
+    public Ticket(Order order, Section section) {
         this.order = order;
-        this.seat = seat;
+        this.section = section;
     }
 
 }

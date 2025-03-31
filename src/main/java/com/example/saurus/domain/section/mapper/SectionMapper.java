@@ -14,6 +14,7 @@ public class SectionMapper {
                 .name(request.getName())
                 .price(request.getPrice())
                 .type(request.getSeatType())
+                .count(request.getCount())
                 .build();
     }
 
@@ -21,7 +22,8 @@ public class SectionMapper {
         section.update(
                 request.getName(),
                 request.getPrice(),
-                request.getSeatType()
+                request.getSeatType(),
+                request.getCount()
         );
     }
 
@@ -32,6 +34,7 @@ public class SectionMapper {
                 .name(section.getName())
                 .price(section.getPrice())
                 .seatType(section.getType())
+                .count(section.getCount())
                 .build();
     }
 }

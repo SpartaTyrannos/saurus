@@ -3,9 +3,11 @@ package com.example.saurus.domain.section.repository;
 import com.example.saurus.domain.section.entity.Section;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SectionRepository extends JpaRepository<Section, Long> {
 
@@ -17,5 +19,8 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
 
     // 전체 목록 조회용 (삭제되지 않은 섹션들)
     List<Section> findByGameIdAndDeletedAtIsNull(Long gameId);
+
+    @EntityGraph(attributePaths = {"game"})
+    Optional<Section> findWithGameById(Long id);
 
 }
