@@ -41,3 +41,4 @@ public interface SectionRepository extends JpaRepository<Section, Long> {
     @Query("SELECT s FROM Section s WHERE s.id = :sectionId")
     Optional<Section> findWithLockById(@Param("sectionId") Long sectionId);
 }
+

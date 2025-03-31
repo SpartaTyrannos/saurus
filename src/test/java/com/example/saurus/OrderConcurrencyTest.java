@@ -61,10 +61,11 @@ public class OrderConcurrencyTest {
         }
 
         latch.await();
-        System.out.println("성공 요청 수: " + successCount.get());
-        System.out.println("실패 요청 수: " + failureCount.get());
 
         Section updatedSection = sectionRepository.findById(sectionId).orElseThrow();
+
+        System.out.println("성공 요청 수: " + successCount.get());
+        System.out.println("실패 요청 수: " + failureCount.get());
         Assertions.assertEquals(0, updatedSection.getCount());
     }
 
