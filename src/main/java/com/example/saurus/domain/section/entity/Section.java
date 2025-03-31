@@ -3,15 +3,18 @@ package com.example.saurus.domain.section.entity;
 import com.example.saurus.domain.common.entity.BaseEntity;
 import com.example.saurus.domain.game.entity.Game;
 import com.example.saurus.domain.seat.enums.SeatType;
-import com.example.saurus.domain.seat.entity.Seat;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "sections")
+//@Table( name = "sections")
+@Table( name = "sections",
+        indexes = {
+                @Index(name = "idx_section_game_name_deleted", columnList = "game_id, name, deleted_at"),
+                @Index(name = "idx_section_game_deleted_id", columnList = "game_id, deleted_at, id")})
 @Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Setter
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Section extends BaseEntity {
@@ -34,9 +37,13 @@ public class Section extends BaseEntity {
     @Column(nullable = false, length = 20)
     private SeatType type;
 
-    public void update(String name, Integer price, SeatType type) {
+    @Column(nullable = false)
+    private Integer count;
+
+    public void update(String name, Integer price, SeatType type, Integer count) {
         this.name = name;
         this.price = price;
         this.type = type;
+        this.count = count;
     }
 }

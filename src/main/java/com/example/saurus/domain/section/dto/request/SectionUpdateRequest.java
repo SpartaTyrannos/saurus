@@ -20,4 +20,8 @@ public class SectionUpdateRequest {
 
     @NotNull(message = "좌석 타입은 필수입니다.")
     private SeatType seatType;
+
+    @NotNull(message = "좌석 개수는 필수입니다.")
+    @Min(value = 0, message = "개수는 0개 이상이어야 합니다.")
+    private Integer count;
 }

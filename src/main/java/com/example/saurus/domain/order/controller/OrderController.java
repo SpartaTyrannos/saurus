@@ -30,13 +30,15 @@ public class OrderController {
     public ResponseEntity<OrderResponseDto> createOrder(
             @AuthenticationPrincipal AuthUser authUser,
             @RequestParam("gameId") Long gameId,
-            @RequestParam("seatIds") List<Long> seatIds,
+            @RequestParam("sectionId") Long sectionId,
+            @RequestParam("seatCount") Integer seatCount,
             @RequestBody PaymentMethodRequest methodRequest
     ) {
 
         OrderCreateRequestDto requestDto = new OrderCreateRequestDto();
         requestDto.setGameId(gameId);
-        requestDto.setSeatIdList(seatIds);
+        requestDto.setSectionId(sectionId);
+        requestDto.setSeatCount(seatCount);
         requestDto.setPaymentMethod(methodRequest.getPaymentMethod());
 
         Long userId = authUser.getId();

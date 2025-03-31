@@ -13,7 +13,7 @@ import java.time.Year;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name="subscribes")
+@Table( name = "subscribes" )
 public class Subscribe extends BaseEntity {
 
     @Id

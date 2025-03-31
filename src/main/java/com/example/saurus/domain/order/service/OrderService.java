@@ -1,6 +1,9 @@
 package com.example.saurus.domain.order.service;
 
 import com.example.saurus.domain.common.exception.CustomException;
+import com.example.saurus.domain.game.entity.Game;
+import com.example.saurus.domain.game.repository.GameRepository;
+import com.example.saurus.domain.lock.service.RedisLockService;
 import com.example.saurus.domain.order.OrderStatus;
 import com.example.saurus.domain.order.dto.MetaDto;
 import com.example.saurus.domain.order.dto.request.OrderCreateRequestDto;
@@ -12,8 +15,8 @@ import com.example.saurus.domain.order.repository.OrderRepository;
 import com.example.saurus.domain.payment.PaymentStatus;
 import com.example.saurus.domain.payment.entity.Payment;
 import com.example.saurus.domain.payment.repository.PaymentRepository;
-import com.example.saurus.domain.seat.entity.Seat;
-import com.example.saurus.domain.seat.repository.SeatRepository;
+import com.example.saurus.domain.section.entity.Section;
+import com.example.saurus.domain.section.repository.SectionRepository;
 import com.example.saurus.domain.subscribe.entity.Subscribe;
 import com.example.saurus.domain.subscribe.repository.SubscribeRepository;
 import com.example.saurus.domain.ticket.entity.Ticket;
@@ -29,6 +32,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,109 +42,107 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
-    private final SeatRepository seatRepository;
     private final TicketRepository ticketRepository;
     private final PaymentRepository paymentRepository;
     private final SubscribeRepository subscribeRepository;
+    private final GameRepository gameRepository;
+    private final SectionRepository sectionRepository;
+
+    private final RedisLockService redisLockService;  // Redis 기반 락 서비스
+
 
     /**
      * 주문 생성 (주문, 티켓, 결제를 한 트랜잭션 내 처리)
      *
-     * @param request 주문 생성 요청 DTO (gameId, seatIds)
+     * @param request 주문 생성 요청 DTO (gameId, sectionId, seatCount, paymentMethod)
      * @param userId  JWT에서 추출된 사용자 ID
      * @return 생성된 주문에 대한 응답 DTO
      */
     public OrderResponseDto createOrder(OrderCreateRequestDto request, Long userId) {
-        // 사용자 조회
-        User user = userRepository.findById(userId).orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND,"존재하지 않는 사용자입니다."));
 
-        if (request.getSeatIdList() == null || request.getSeatIdList().isEmpty()) {
-            throw new CustomException(HttpStatus.NOT_FOUND,"좌석이 존재하지 않습니다.");
-        }
+        // 섹션별 락 키 생성 (예: "seat_lock:5" – 구역 ID가 5인 경우)
+        String lockKey = "seat_lock:" + request.getSectionId();
 
-        if (request.getSeatIdList().size() > 4) {
-            throw new CustomException(HttpStatus.BAD_REQUEST,"1인당 최대 4장까지만 예매가 가능합니다.");
-        }
+        AtomicReference<OrderResponseDto> responseRef = new AtomicReference<>();
 
-        /*
-         * 좌석 조회
-         * 동시성 제어 필요
-         * */
-        List<Seat> seats = seatRepository.findAllByIdWithSection(request.getSeatIdList());
-        if (seats.size() != request.getSeatIdList().size()) {
-            throw new CustomException(HttpStatus.BAD_REQUEST,"하나 이상의 좌석을 찾을 수 없습니다.");
-        }
+        // Redis 락을 이용하여 동시성 제어
+        redisLockService.executeWithLock(lockKey, () -> {
+            // 1. 사용자 조회
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-        // 좌석 별로 해당 경기의 좌석이 맞는지 확인
-        for (Seat seat : seats) {
-            Long gameSeatId = seat.getSection().getGame().getId();
-            if (!request.getGameId().equals(gameSeatId)) {
-                throw new CustomException(HttpStatus.BAD_REQUEST,"해당 경기 좌석이 아닙니다.");
+            // 2. 경기 및 구역(Section) 조회
+            Game game = gameRepository.findById(request.getGameId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."));
+            Section section = sectionRepository.findWithGameById(request.getSectionId())
+                    .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 구역입니다."));
+
+            // 3. 유효성 검사
+            if (!game.getId().equals(section.getGame().getId())) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "해당 경기 구역이 아닙니다.");
             }
-        }
+            if (section.getCount() < request.getSeatCount()) {
+                throw new CustomException(HttpStatus.BAD_REQUEST, "남아있는 좌석 수 부족");
+            }
 
-        // 주문 생성
-        Order order = new Order();
-        order.setUser(user);
-        order.setStatus(OrderStatus.CREATED);
-        order.setTotalPrice(0);
-        orderRepository.save(order);
+            // 4. 좌석 수 차감 및 섹션 업데이트
+            section.setCount(section.getCount() - request.getSeatCount());
+            sectionRepository.save(section);
 
-        int totalTicketPrice = 0;
-        int ticketCount = 0;
+            // 5. 주문 생성
+            Order order = new Order();
+            order.setUser(user);
+            order.setTicketAmount(request.getSeatCount());
+            order.setTotalPrice(section.getPrice() * request.getSeatCount());
+            order.setStatus(OrderStatus.CREATED);
+            orderRepository.save(order);
 
-        // 티켓 생성
-        for (Seat seat : seats) {
-            int seatPrice = seat.getSection().getPrice();
-            Ticket ticket = new Ticket();
-            ticket.setOrder(order);
-            ticket.setSeat(seat);
-            ticketRepository.save(ticket);
+            // 6. 티켓 생성 (요청한 좌석 수 만큼 티켓 생성)
+            for (int i = 0; i < request.getSeatCount(); i++) {
+                Ticket ticket = new Ticket(order, section);
+                ticketRepository.save(ticket);
+            }
 
-            totalTicketPrice += seatPrice;
-            ticketCount++;
-        }
+            // 7. 구독 할인 계산
+            LocalDateTime now = LocalDateTime.now();
+            List<Subscribe> activeSubscriptions = subscribeRepository.findActiveSubscriptions(userId, now);
+            double discountRate = activeSubscriptions.stream()
+                    .findFirst()
+                    .map(sub -> sub.getMembership().getDiscount())
+                    .orElse(0.0);
+            int discountedPrice = (int) (order.getTotalPrice() * (1 - discountRate));
 
-        order.setTicketAmount(ticketCount);
+            // 8. 결제 처리
+            Payment payment = new Payment();
+            payment.setOrder(order);
+            payment.setFinalPrice(discountedPrice);
+            payment.setPaymentMethod(request.getPaymentMethod());
+            payment.setPaymentStatus(PaymentStatus.PENDING);
+            paymentRepository.save(payment);
 
-        // 현재 시간 가져오기
-        LocalDateTime now = LocalDateTime.now();
+            // 결제 성공 처리 (실제 결제 로직은 PG 연동 등으로 확장 가능)
+            payment.setPaymentStatus(PaymentStatus.SUCCESS);
+            paymentRepository.save(payment);
+            order.setStatus(OrderStatus.PAID);
+            orderRepository.save(order);
 
-        // DB에서 유효한 구독만 조회
-        List<Subscribe> activeSubscriptions = subscribeRepository.findActiveSubscriptions(userId, now);
 
-        // 가장 최신 구독의 할인율 가져오기 (없으면 0.0)
-        double discountRate = activeSubscriptions.stream().findFirst().map(sub -> sub.getMembership().getDiscount()).orElse(0.0);
+            // 9. 결과 저장 및 반환
+            responseRef.set(new OrderResponseDto(
+                    order.getId(),
+                    userId,
+                    request.getSeatCount(),
+                    discountRate,
+                    discountedPrice,
+                    order.getCreatedAt().toString(),
+                    request.getPaymentMethod(),
+                    OrderStatus.PAID
+            ));
+        });
 
-        int discountedPrice = (int) (totalTicketPrice * (1 - discountRate));
-        order.setTotalPrice(discountedPrice);
-
-        Payment payment = new Payment();
-        payment.setOrder(order);
-        payment.setFinalPrice(discountedPrice);
-        payment.setPaymentMethod(request.getPaymentMethod());
-        payment.setPaymentStatus(PaymentStatus.PENDING);
-        paymentRepository.save(payment);
-
-        // PG 연동 하여 결제 요청 및 결과 처리 로직 필요
-
-        payment.setPaymentStatus(PaymentStatus.SUCCESS);
-        paymentRepository.save(payment);
-
-        order.setStatus(OrderStatus.PAID);
-        orderRepository.save(order);
-
-        return new OrderResponseDto(
-                order.getId(),
-                userId,
-                ticketCount,
-                discountRate,
-                discountedPrice,
-                order.getCreatedAt().toString(),
-                payment.getPaymentMethod(),
-                order.getStatus()
-        );
+        return responseRef.get();
     }
+
 
     // 주문 전체 조회 (페이징)
     @Transactional(readOnly = true)

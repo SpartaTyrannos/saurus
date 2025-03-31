@@ -13,4 +13,5 @@ public class SectionResponse {
     private String name;
     private Integer price;
     private SeatType seatType;
+    private Integer count;
 }
