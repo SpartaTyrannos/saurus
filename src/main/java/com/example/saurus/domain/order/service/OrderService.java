@@ -32,7 +32,6 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 @Service
@@ -59,20 +58,15 @@ public class OrderService {
     public OrderResponseDto createOrder(OrderCreateRequestDto request, Long userId) {
         String lockKey = "seat_lock:" + request.getSectionId();
 
-        AtomicReference<OrderResponseDto> responseRef = new AtomicReference<>();
-
-        lockService.executeWithLock(lockKey, () -> {
-            // 사용자 조회
+        return lockService.executeWithLock(lockKey, () -> {
             User user = userRepository.findById(userId)
                     .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 사용자입니다."));
 
-            // 경기, 섹션 조회
             Game game = gameRepository.findById(request.getGameId())
                     .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 경기입니다."));
             Section section = sectionRepository.findWithGameById(request.getSectionId())
                     .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "존재하지 않는 구역입니다."));
 
-            // 유효성 검사
             if (!game.getId().equals(section.getGame().getId())) {
                 throw new CustomException(HttpStatus.BAD_REQUEST, "해당 경기 구역이 아닙니다.");
             }
@@ -115,26 +109,24 @@ public class OrderService {
             payment.setPaymentStatus(PaymentStatus.PENDING);
             paymentRepository.save(payment);
 
+            // 결제 상태를 성공으로 업데이트
             payment.setPaymentStatus(PaymentStatus.SUCCESS);
             paymentRepository.save(payment);
             order.setStatus(OrderStatus.PAID);
             orderRepository.save(order);
 
             // 결과 저장
-            responseRef.set(new OrderResponseDto(
+            return new OrderResponseDto(
                     order.getId(),
                     userId,
                     request.getSeatCount(),
                     discountRate,
                     discountedPrice,
-                    order.getCreatedAt().toString(),
+                    order.getCreatedAt() != null ? order.getCreatedAt().toString() : "N/A",
                     request.getPaymentMethod(),
                     OrderStatus.PAID
-            ));
-            return responseRef.get();
+            );
         });
-
-        return responseRef.get();
     }
 
 
